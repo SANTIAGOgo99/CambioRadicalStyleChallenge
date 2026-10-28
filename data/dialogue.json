@@ -1,0 +1,10 @@
+{
+  "intro": {"speaker": "Sofía", "text": "Tengo una entrevista de trabajo. Quiero verme profesional, mantener mi cabello largo y conservar un estilo natural. Mi presupuesto es de quinientos pesos."},
+  "guide": {"speaker": "Ezequiel", "text": "Escucha a Sofía antes de elegir. Puedes probar las opciones sin gastar. Cada servicio confirmado consume tiempo y presupuesto."},
+  "cut": {"speaker": "Ezequiel", "text": "Elige el corte y el color. Después arrastra la herramienta por las tres zonas indicadas. También puedes seleccionarlas con el teclado."},
+  "style": {"speaker": "Ezequiel", "text": "Ahora el peinado y la vestimenta. Recuerda que Sofía necesita una presentación profesional para su entrevista."},
+  "review": {"speaker": "Sofía", "text": "¿El resultado mantiene mi largo y mi estilo natural? Revisemos el look antes de terminar."},
+  "success": {"speaker": "Sofía", "text": "¡Me encanta! Me veo profesional y sigo sintiéndome yo. Gracias por escuchar lo que necesitaba."},
+  "failure": {"speaker": "Sofía", "text": "Este cambio no cumple lo que pedí. Necesitaba conservar el largo y verme natural y profesional para mi entrevista."},
+  "timeout": {"speaker": "Ezequiel", "text": "Se terminó el tiempo. Puedes volver a intentarlo; revisa el tiempo de cada servicio antes de confirmarlo."}
+}

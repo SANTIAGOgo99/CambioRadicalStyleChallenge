@@ -32,6 +32,21 @@ func _ready() -> void:
 	close_button.text = "Guardar y volver"
 	close_button.pressed.connect(close)
 	rows.add_child(close_button)
+	var focus_controls: Array[Control] = []
+	for bus: String in BUS_LABELS:
+		focus_controls.append(sliders[bus])
+	focus_controls.append(subtitles)
+	focus_controls.append(close_button)
+	for index in range(focus_controls.size()):
+		var control := focus_controls[index]
+		var next := focus_controls[(index + 1) % focus_controls.size()]
+		var previous := focus_controls[(index - 1 + focus_controls.size()) % focus_controls.size()]
+		control.focus_next = next.get_path()
+		control.focus_previous = previous.get_path()
+		control.focus_neighbor_top = previous.get_path()
+		control.focus_neighbor_bottom = next.get_path()
+		control.focus_neighbor_left = control.get_path()
+		control.focus_neighbor_right = control.get_path()
 
 
 func open() -> void:

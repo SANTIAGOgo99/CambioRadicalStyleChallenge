@@ -1,0 +1,17 @@
+{
+  "title": "Primera impresión",
+  "client": "Sofía",
+  "event": "Entrevista de trabajo",
+  "budget": 500,
+  "seconds": 300,
+  "cut_options": [
+    {"name": "Mantener largo", "detail": "Castaño natural · limpieza de puntas", "price": 80, "seconds": 30},
+    {"name": "Mantener largo", "detail": "Castaño cálido · acabado suave", "price": 120, "seconds": 40},
+    {"name": "Corte medio", "detail": "Rojo intenso · cambio atrevido", "price": 260, "seconds": 60}
+  ],
+  "style_options": [
+    {"name": "Liso formal + blazer", "detail": "Acabado pulido y profesional", "price": 80, "seconds": 80},
+    {"name": "Ondas suaves + blazer", "detail": "Ondas naturales, presentación formal", "price": 120, "seconds": 90},
+    {"name": "Recogido + vestido", "detail": "Vestimenta para un evento de noche", "price": 160, "seconds": 100}
+  ]
+}

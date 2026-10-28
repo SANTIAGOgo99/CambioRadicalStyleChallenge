@@ -20,11 +20,11 @@ func show_line(text: String, speaker: String = "", audio: AudioStream = null, du
 	text_label.text = text if speaker.is_empty() else "%s: %s" % [speaker, text]
 	active = true
 	_update_visibility(Settings.subtitles_enabled)
-	if audio != null:
+	if audio != null and AudioServer.get_driver_name() != "Dummy":
 		voice.stream = audio
 		voice.play()
 	else:
-		timer.start(maxf(duration, 0.1))
+		timer.start(maxf(audio.get_length() if audio != null else duration, 0.1))
 
 
 func clear() -> void:
@@ -32,6 +32,12 @@ func clear() -> void:
 	timer.stop()
 	active = false
 	hide()
+
+
+func _exit_tree() -> void:
+	voice.stop()
+	voice.stream = null
+	timer.stop()
 
 
 func _update_visibility(enabled: bool) -> void:
