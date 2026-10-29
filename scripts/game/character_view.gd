@@ -44,6 +44,7 @@ func show_pose(index: int, source: Texture2D = null) -> void:
 	if sheet == null:
 		return
 	var cell := Vector2(sheet.get_size()) / Vector2(columns, rows)
+	var canvas := Vector2(cell.x * 1.35, cell.y)
 	var part := AtlasTexture.new()
 	part.atlas = sheet
 	part.region = Rect2(Vector2(index % columns, floori(float(index) / columns)) * cell, cell)
@@ -55,7 +56,7 @@ func show_pose(index: int, source: Texture2D = null) -> void:
 		var area: Array = entry.region
 		part.region = Rect2(float(area[0]), float(area[1]), float(area[2]), float(area[3]))
 		# Align original frames by face and feet while keeping the generated PNGs intact.
-		part.margin = Rect2(Vector2(cell.x / 2.0 - float(entry.head_x), cell.y - float(area[3])), cell - Vector2(float(area[2]), float(area[3])))
+		part.margin = Rect2(Vector2(canvas.x / 2.0 - float(entry.head_x), canvas.y - float(area[3])), canvas - Vector2(float(area[2]), float(area[3])))
 		if portrait_mode and entry.has("portrait"):
 			var crop: Array = entry.portrait
 			part.region = Rect2(float(crop[0]), float(crop[1]), float(crop[2]), float(crop[3]))

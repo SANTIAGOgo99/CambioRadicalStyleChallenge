@@ -1,0 +1,38 @@
+CAMBIO RADICAL: STYLE CHALLENGE — ENTREGA 1.0
+Videojuego académico de Creación de Videojuegos
+Héctor Santiago Hernández
+
+JUGAR
+Abre CambioRadicalStyleChallenge.exe en Windows de 64 bits.
+No requiere Godot, internet ni instalación. Los recursos están dentro del EXE.
+Si descargas el ZIP, extráelo antes de jugar. No ejecutes dentro del ZIP.
+
+Nueva partida inicia la historia de Alex en el salón de Ezequiel.
+Completa los retos de Sofía, Mariana y Valeria para convertirte en Hair Designer.
+Cada clienta necesita al menos dos estrellas para superar el reto.
+
+CONTROLES
+Ratón: elegir opciones, confirmar y arrastrar herramientas a las zonas 1, 2 y 3.
+Teclado: Tab para navegar; Enter o Espacio para confirmar o aplicar herramientas.
+Esc: pausa o volver. F11: pantalla completa.
+Ajustes: volumen general, música, efectos, voces, subtítulos y pantalla completa.
+
+Las vistas previas son gratuitas; confirmar un servicio consume dinero y tiempo.
+La pausa detiene el reloj y la voz. Puedes fallar y reintentar cada nivel.
+Continuar partida recupera el reto y los servicios guardados. Al cerrar el juego
+se conserva el progreso. Nueva partida pide confirmar antes de borrarlo.
+Guardado: %APPDATA%\Godot\app_userdata\CambioRadicalStyleChallenge\
+
+CONTENIDO
+Tres niveles, introducción y final, arte original, animaciones de poses y faciales,
+28 diálogos con voces sintéticas españolas, subtítulos, música, efectos, recompensas,
+insignias y objetos. Las voces son sintéticas; las animaciones usan poses y materiales.
+
+El EXE no tiene firma digital. Requiere una GPU/controlador con OpenGL 3.3.
+No se ha comprobado en otros equipos distintos del equipo de desarrollo.
+Las licencias de Godot y sus dependencias están en LICENCIAS_MOTOR.txt.
+
+PROYECTO EDITABLE
+Conservado por separado en la carpeta raíz del repositorio y en el ZIP de fuentes.
+Importa project.godot con Godot 4.7.2 y pulsa F5. No requiere C# ni Unity.
+Repositorio y descargas: https://github.com/SANTIAGOgo99/CambioRadicalStyleChallenge

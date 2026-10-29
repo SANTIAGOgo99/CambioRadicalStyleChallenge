@@ -1,0 +1,30 @@
+COMPROBACIONES DE ENTREGA — 29 de octubre de 2026
+Godot 4.7.2.stable.official.ed1daf0bf / Windows x86_64
+
+PROYECTO EDITABLE
+- Importación, carga de escena y arranque: correctos, sin errores del motor.
+- Campaña ejecutada con Godot: los tres niveles se completan, fallan y reintentan;
+  también se verificó la derrota por tiempo en cada nivel.
+- Pausa detiene el reloj y la voz; Continuar recupera fase y servicio en curso,
+  incluidas zonas ya aplicadas, sin cobrar de nuevo ni duplicar objetos.
+- Guardado recargado desde disco, monedas, estrellas, insignias, desbloqueos,
+  compra/consumo de cupón, ficha de tendencia y uniforme alternativo: correctos.
+- Introducción, navegación, recompensas y final: comprobados.
+- Revisión visual con render OpenGL de menú, niveles, trabajo, pausa, ajustes,
+  recompensas, instrucciones, créditos y final; sin superposiciones importantes.
+- Interfaz base a 1280x720, 1920x1080, 2560x1080 y 1280x1024: comprobada.
+- Los 39 WAV contienen señal PCM; los 28 diálogos tienen su archivo de voz.
+
+EJECUTABLE DE ENTREGA
+- Exportación release con plantillas oficiales 4.7.2: salida 0.
+- EXE real iniciado en Windows sin editor instalado en el proceso: salida 0.
+- Arranque gráfico y menú del EXE renderizados con Intel UHD / OpenGL 3.3:
+  salida 0, sin errores ni avisos en el registro.
+- El recorrido completo de la campaña se comprobó ejecutando el proyecto en Godot;
+  la comprobación del EXE independiente cubrió arranque y renderizado del menú.
+
+LÍMITES
+Comprobado en el equipo de desarrollo; no se ha probado en otros equipos.
+Voces sintéticas. Animaciones por poses y materiales, sin rig esquelético completo.
+No hay errores críticos conocidos tras estas comprobaciones.
+Registros temporales de desarrollo: .godot/checks/final-*.log (fuera de Git).

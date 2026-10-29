@@ -297,7 +297,10 @@ func _show_choices() -> void:
 	right_rows.add_child(_label("Corte y color" if phase == "cut" else "Peinado y estilo", 32))
 	right_rows.add_child(_label("Vista previa gratuita. " + ("Kit profesional: servicios 15 % más rápidos." if Campaign.completed(0) else "Escucha lo que pidió la clienta."), 21, MUTED))
 	var options: Array = level.cut_options if phase == "cut" else level.style_options
-	for index in range(options.size()):
+	var order := [0, 1, 2]
+	if level_index > 0:
+		order.shuffle()
+	for index: int in order:
 		var option: Dictionary = options[index]
 		var callback := _select_option.bind(index)
 		var button := _button("%s\n%s\n$%d   ·   %d s" % [option.name, option.detail, option.price, option.seconds], callback, true)
@@ -420,6 +423,7 @@ func _start_service() -> void:
 
 func _build_work(done: int = 0) -> void:
 	working = true
+	mentor.show_pose(0, load("res://assets/characters/ezequiel_expressions.png"))
 	strokes = done
 	_update_status()
 	_clear(right_rows)
@@ -470,9 +474,10 @@ func _position_targets() -> void:
 	var displayed := image_size * minf(sofia.size.x / image_size.x, sofia.size.y / image_size.y)
 	var origin := sofia.position + (sofia.size - displayed) / 2.0
 	var short_hair: bool = level.short_cut.has(selected if phase == "cut" else cut_choice)
-	var points := [Vector2(0.25, 0.17), Vector2(0.68, 0.22), Vector2(0.40, 0.25 if short_hair else 0.39)]
+	var center_x := origin.x + displayed.x / 2.0
+	var points := [Vector2(center_x - displayed.y * 0.12, origin.y + displayed.y * 0.17), Vector2(center_x + displayed.y * 0.09, origin.y + displayed.y * 0.22), Vector2(center_x - displayed.y * 0.05, origin.y + displayed.y * (0.25 if short_hair else 0.39))]
 	for index in range(targets.size()):
-		targets[index].position = origin + displayed * points[index] - Vector2(32, 32)
+		targets[index].position = points[index] - Vector2(32, 32)
 
 
 func _finish_target(index: int) -> void:
@@ -557,7 +562,7 @@ func _result(passed: bool, heading: String, line: String) -> void:
 	working = false
 	_clear_targets()
 	tool.hide()
-	var thrift := money >= int(float(level.budget) * 0.15)
+	var thrift := money >= int(float(level.budget) * 0.25)
 	var fast := remaining >= float(level.seconds) * 0.20
 	var partial: bool = level.good_cut.has(cut_choice) or level.good_style.has(style_choice)
 	var stars := (3 if thrift and fast else 2) if passed else (1 if partial and line != "timeout" else 0)
@@ -653,7 +658,7 @@ func _say(id: String) -> void:
 
 
 func _dialogue_finished() -> void:
-	mentor.show_pose(0)
+	mentor.show_pose(0, load("res://assets/characters/ezequiel_expressions.png") if working else null)
 	if phase == "intro" and active_line == "intro":
 		_say("guide")
 
@@ -780,7 +785,7 @@ func _update_accessory(large: bool, trend: bool) -> void:
 	bad_accessory.size = Vector2(100, 100) if large else Vector2(42, 42)
 	var displayed := Vector2(sofia.texture.get_size())
 	displayed *= minf(sofia.size.x / displayed.x, sofia.size.y / displayed.y)
-	bad_accessory.position = sofia.position + (sofia.size - displayed) / 2.0 + displayed * Vector2(0.65, 0.04)
+	bad_accessory.position = sofia.position + (sofia.size - displayed) / 2.0 + Vector2(displayed.x / 2.0 + displayed.y * 0.08, displayed.y * 0.04)
 
 
 func _label(text: String, font_size: int = 26, color: Color = INK) -> Label:

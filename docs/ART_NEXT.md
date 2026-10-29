@@ -1,19 +1,16 @@
-# Recursos originales para el siguiente pulido del nivel 1
+# Arte integrado en la entrega
 
-Ya integrados: salón, Alex con seis poses, Ezequiel con dos retratos, Sofía con
-variantes de cabello/ropa y reacciones, y herramientas. Todo se generó originalmente,
-sin convertir las imágenes de los PDF en recursos del juego.
+Recursos originales: salón, Alex con seis poses, Ezequiel con cuatro poses/retratos,
+y Sofía, Mariana y Valeria con atlas de expresiones y combinaciones de cabello/ropa.
+Herramientas, accesorios e icono propios. No se utilizan las imágenes de los PDF.
+Los prompts están conservados en `assets/ART_PROMPTS.json`.
 
-Para animación facial y manipulación del cabello más fluida:
+Los atlas PNG se mantienen intactos. `data/character_frames.json` alinea las figuras
+y localiza ojos y boca; `character_face.gdshader` anima parpadeos y habla. GDScript
+anima respiración, aplicación de herramientas, transiciones, reacciones y celebración.
+Los accesorios adicionales se superponen de forma independiente. El cambio de uniforme
+de Alex se realiza por material. Los cambios de look se construyen con variantes de atlas.
 
-- Sofía: cuerpo y rostro base; cabello frontal/trasero por variante; ojos abiertos,
-  semicerrados y cerrados; cejas neutral/nerviosa/feliz/inconforme; bocas de habla;
-  blusa, blazer y accesorios por separado.
-- Alex: separar manos, antebrazos y herramientas en las poses de corte, tinte y secado;
-  añadir cuadros intermedios con el mismo registro para evitar saltos de postura.
-- Ezequiel: bocas de diálogo y poses de observar y felicitar.
-
-Cada capa debe ser PNG transparente con el mismo lienzo y puntos de registro que
-las demás capas de su personaje. Usar como referencia los diseños originales de
-`assets/characters/`, conservando rostro, proporciones, ropa y paleta. Las herramientas
-de generación están disponibles para producir estos recursos; no bloquean el nivel jugable.
+No faltan ilustraciones necesarias para completar la campaña. Una mejora futura sería
+un rig por capas de brazos y cabello para movimientos continuos más detallados; esta
+entrega utiliza poses ilustradas y animación procedural, sin rig esquelético completo.

@@ -27,6 +27,14 @@ func _ready() -> void:
 	state.trends = clampi(int(state.trends), 0, 99)
 	state.last_level = clampi(int(state.last_level), 0, 2)
 	state.story_complete = completed(0) and completed(1) and completed(2)
+	if completed(0):
+		_badge("Primer cambio")
+	if completed(1):
+		_badge("Diseñador de eventos")
+	if state.story_complete:
+		_badge("Hair Designer")
+	if state.stars.has(3):
+		_badge("Estrella dorada")
 
 
 func _reset_memory() -> void:

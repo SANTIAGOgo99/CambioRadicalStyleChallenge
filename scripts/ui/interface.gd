@@ -359,6 +359,7 @@ func show_credits() -> void:
 	var rows := _panel(body, 1120)
 	rows.add_child(_label("Héctor Santiago Hernández", 40))
 	rows.add_child(_label("Propuesta, historia y proyecto académico\nUniversidad Tecnológica de la Huasteca Hidalguense", 28))
+	rows.add_child(_label("Proyecto transversal: Ezequiel Castillo Ángeles Hair Designer.", 24, MUTED))
 	rows.add_child(_label("Desarrollo en Godot 4.7.2 y GDScript. Arte original generado para este videojuego; no se utilizan las imágenes de referencia de los PDF como personajes.", 26, MUTED))
 	rows.add_child(_label("Música y efectos originales sintetizados. Voces sintéticas españolas de Windows: Sabina y Raúl. El juego funciona sin conexión a internet.", 26, MUTED))
 	rows.add_child(_label("Godot Engine y sus dependencias se distribuyen bajo sus licencias correspondientes, incluidas con la entrega.", 23, MUTED))
@@ -382,7 +383,7 @@ func show_finale() -> void:
 	certificate.add_child(_label("Por escuchar, crear y cuidar cada detalle.\n\nSofía · Mariana · Valeria", 28, MUTED))
 	certificate.add_child(_button("Volver a elegir clienta", show_levels))
 	certificate.add_child(_button("Menú principal", show_menu, true))
-	_portrait(body, "ezequiel_original", 1, Vector2(460, 570), "Ezequiel", true)
+	_portrait(body, "ezequiel_expressions", 1, Vector2(460, 570), "Ezequiel")
 	var confetti := CPUParticles2D.new()
 	screen.add_child(confetti)
 	confetti.position = Vector2(get_viewport_rect().size.x / 2.0, -20)
@@ -552,7 +553,7 @@ func _portrait(parent: Node, asset: String, pose: int, minimum: Vector2, speaker
 	person.custom_minimum_size = minimum
 	person.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	parent.add_child(person)
-	person.setup(load("res://assets/characters/%s.png" % asset) as Texture2D, 2 if asset == "ezequiel_original" else 3, 1 if asset == "ezequiel_original" else 2)
+	person.setup(load("res://assets/characters/%s.png" % asset) as Texture2D, 2 if asset.begins_with("ezequiel_") else 3, 1 if asset.begins_with("ezequiel_") else 2)
 	person.show_pose(pose)
 	person.set_meta("speaker", speaker)
 	view_characters.append(person)

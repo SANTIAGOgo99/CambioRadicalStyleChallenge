@@ -1,77 +1,42 @@
-# CambioRadicalStyleChallenge
+# Cambio Radical: Style Challenge
 
-Proyecto 2D preparado para Godot **4.7.2** y **GDScript** exclusivamente.
-No utiliza Unity, C# ni dependencias externas.
+Videojuego académico 2D de Creación de Videojuegos, desarrollado en **Godot 4.7.2 y GDScript**. Funciona sin internet. Rama de trabajo: `develop`; `main` contiene la entrega estable.
 
-Videojuego académico de la materia Creación de Videojuegos. Se desarrolla
-directamente en `develop`; GitHub se utiliza como respaldo de los avances.
-La prioridad es completar el juego y exportarlo para Windows, con comprobaciones
-básicas, sin pipelines ni procesos de gestión adicionales.
+## Jugar en Windows
 
-El primer nivel, **Primera impresión**, ya tiene un ciclo jugable: ficha de Sofía,
-corte/color, peinado/vestimenta, acciones con herramientas, evaluación, estrellas,
-monedas, guardado y reintento. Incluye arte original de Alex, Sofía, Ezequiel y el salón,
-música y efectos originales, voces sintéticas españolas y subtítulos sincronizados.
-Los PDF originales están en `docs/original/`; sus imágenes no son recursos del juego.
-La especificación breve y las contradicciones detectadas están en `docs/GAME_BRIEF.md`.
-Los niveles de Mariana y Valeria y el acabado final siguen pendientes.
+Abrir `Entrega_Final/CambioRadicalStyleChallenge.exe`. Incluye los recursos en el propio ejecutable y no requiere instalar Godot. La entrega descargable también se publica en Releases de GitHub.
 
-## Estructura
+1. Elegir **Nueva partida** y escuchar a Ezequiel y a cada clienta.
+2. Probar una opción de corte/color o peinado: la vista previa es gratuita. **Confirmar** cobra el servicio y descuenta su tiempo.
+3. Arrastrar la herramienta a las zonas del cabello 1, 2 y 3. También se puede usar **Tab** y **Enter/Espacio**.
+4. Revisar el antes/después y entregar el look. Conseguir al menos dos estrellas desbloquea el siguiente reto.
 
-| Carpeta | Uso previsto |
-| --- | --- |
-| `scenes/` | Escenas Godot; `main.tscn` es el punto de entrada |
-| `scenes/ui/` | Interfaz adaptable, ajustes y subtítulos reutilizables |
-| `scripts/` | Código del videojuego en GDScript |
-| `assets/characters/` | Recursos gráficos de personajes definidos por la documentación |
-| `assets/backgrounds/` | Fondos |
-| `assets/ui/` | Recursos gráficos de interfaz |
-| `assets/audio/` | Música y efectos de sonido |
-| `animations/` | Recursos de animación |
-| `data/` | Datos y recursos de configuración del juego |
-| `tests/` | Validación técnica, sin mecánicas de juego |
-| `docs/` | Documentación técnica |
-| `docs/original/` | Carpeta reservada para la documentación original |
+**Esc** abre la pausa; **F11** alterna pantalla completa. Ajustes permite controlar volumen general, música, efectos, voces y subtítulos. La pausa detiene el reloj y el diálogo. **Continuar partida** recupera el reto guardado, incluidos los servicios aplicados. Nueva partida solicita confirmación antes de borrar el progreso.
 
-Los archivos `.gitkeep` conservan las carpetas vacías en Git. El repositorio de
-respaldo es https://github.com/SANTIAGOgo99/CambioRadicalStyleChallenge.
+## Campaña incluida
 
-## Abrir y validar
+| Nivel | Clienta | Objetivo |
+| --- | --- | --- |
+| Primera impresión | Sofía | Entrevista: conservar largo, acabado natural y profesional |
+| Evento especial | Mariana | Graduación: elegancia juvenil y accesorios discretos |
+| Cambio Radical | Valeria | Transformación visible de corte, color y peinado |
 
-Importar `project.godot` en Godot 4.7.2 y pulsar F5. El botón **Ajustes** o **Esc**
-abre el panel de audio y subtítulos; permite usar ratón o teclado. **Guardar y volver**
-conserva las preferencias en `user://settings.cfg`.
+Incluye introducción, éxito/fracaso, reintentos, estrellas, monedas, insignias, kit profesional, espejo de vista previa, cupones, fichas de tendencia, uniforme alternativo y reconocimiento final de Alex como Hair Designer. Repetir un nivel recompensa únicamente las mejoras de puntuación.
 
-Elegir una opción muestra una vista previa gratuita. **Aplicar cambio** confirma
-el costo y el tiempo del servicio. Arrastrar la herramienta sobre las zonas numeradas
-del cabello, o seleccionar cada zona con Tab y Espacio/Enter. Al entregar el look,
-se guardan la mejor puntuación y las monedas; repetir no duplica recompensas.
-Abrir Ajustes detiene el reloj del reto.
+Los diseños de Alex, Ezequiel y las tres clientas son originales. Hay poses, parpadeos y movimiento facial procedural, animaciones de herramientas, reacciones y celebración. Audio: 28 clips de voz sintética en español, tres temas instrumentales y ocho efectos originales. Las voces pueden sustituirse por interpretación humana conservando los textos de `data/dialogue.json`.
 
-Las voces se reproducen mediante el componente de subtítulos: `show_line()` recibe
-texto, nombre opcional y audio; sin audio utiliza una duración indicada. Los textos
-están en `data/dialogue.json`. La música y los efectos futuros deben utilizar
-los canales `Music` y `Effects`, respectivamente.
+## Editar y exportar
 
-El preset **Windows Desktop** incluye los datos JSON y excluye documentos y pruebas.
-La exportación ejecutable requiere las plantillas de exportación Godot 4.7.2;
-los archivos de salida se guardan en `builds/windows/`, fuera de Git.
+Importar **project.godot** con Godot 4.7.2 y pulsar **F5**. El proyecto editable permanece en esta carpeta; no está dentro del ejecutable. `scenes/` y `scripts/` contienen el juego, `data/` los retos y diálogos, `assets/` el arte y audio. Los PDF fuente están en `docs/original/`; sus imágenes no se distribuyen como arte del juego. Decisiones breves en `docs/GAME_BRIEF.md` y procedencia en `assets/ART_PROMPTS.json` y `assets/AUDIO_SOURCES.md`.
 
-Desde PowerShell, en la raíz del proyecto:
+El preset **Windows Desktop** usa las plantillas oficiales 4.7.2, Windows x86_64 y PCK integrado:
 
 ```powershell
-& .\tests\check_project.ps1
+& 'C:\ruta\Godot_v4.7.2-stable_win64_console.exe' --headless --path . --export-release 'Windows Desktop' 'Entrega_Final/CambioRadicalStyleChallenge.exe'
 ```
 
-En otra instalación, indicar la ruta del ejecutable de consola:
+Comprobación básica del proyecto: `& .\tests\check_project.ps1` (acepta `-GodotPath`). Los registros temporales quedan en `.godot/checks/`, excluida de Git. Los binarios de entrega se publican como archivos de Release y se excluyen del historial de Git por su tamaño.
 
-```powershell
-& .\tests\check_project.ps1 -GodotPath 'C:\ruta\Godot_v4.7.2-stable_win64_console.exe'
-```
+Las partidas y preferencias se guardan en `%APPDATA%\Godot\app_userdata\CambioRadicalStyleChallenge\`. El ejecutable no tiene firma digital. Licencias del motor y dependencias incluidas en `Entrega_Final/`.
 
-El archivo PowerShell solo automatiza las comprobaciones del motor. La prueba
-del proyecto se ejecuta en Godot mediante `tests/validate_project.gd`.
-Los registros y la configuración aislada del editor quedan bajo `.godot/`, que
-ya está excluida de Git. No se cambia el PATH ni la configuración global de Windows.
-
-`docs/ENVIRONMENT.md` conserva el informe histórico de la preparación inicial.
+[Repositorio](https://github.com/SANTIAGOgo99/CambioRadicalStyleChallenge)
