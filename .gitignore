@@ -2,3 +2,7 @@
 .godot/
 /android/
 /builds/
+/Entrega_Final/*.exe
+/Entrega_Final/*.pck
+/Entrega_Final/*.dll
+/Entrega_Final/*.zip

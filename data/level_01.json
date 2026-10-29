@@ -2,6 +2,11 @@
   "title": "Primera impresión",
   "client": "Sofía",
   "event": "Entrevista de trabajo",
+  "request": "Profesional y natural, conservando el largo.",
+  "conditions": ["Conservar el cabello largo", "Mantener un color natural", "Verse profesional", "Presupuesto máximo $500"],
+  "asset": "sofia", "voice_prefix": "", "good_cut": [0,1], "good_style": [0,1], "short_cut": [2],
+  "success_text": "Natural, largo y profesional. ¡Escuchaste a Sofía!",
+  "failure_text": "El look no respeta el largo, el color natural o la presentación profesional.",
   "budget": 500,
   "seconds": 300,
   "cut_options": [

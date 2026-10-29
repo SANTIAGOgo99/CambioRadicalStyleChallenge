@@ -7,6 +7,7 @@ const BUS_LABELS := {"Master": "Volumen general", "Music": "Música", "Effects":
 
 var sliders: Dictionary = {}
 var subtitles := CheckButton.new()
+var fullscreen := CheckButton.new()
 var save_error := Label.new()
 var close_button := Button.new()
 var entrance: Tween
@@ -24,6 +25,9 @@ func _ready() -> void:
 	subtitles.text = "Subtítulos"
 	subtitles.toggled.connect(Settings.set_subtitles_enabled)
 	rows.add_child(subtitles)
+	fullscreen.text = "Pantalla completa (F11)"
+	fullscreen.toggled.connect(Settings.set_fullscreen)
+	rows.add_child(fullscreen)
 	save_error.text = "No se pudieron guardar los ajustes. Inténtalo de nuevo."
 	save_error.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	save_error.modulate = Color(1.0, 0.65, 0.65)
@@ -36,6 +40,7 @@ func _ready() -> void:
 	for bus: String in BUS_LABELS:
 		focus_controls.append(sliders[bus])
 	focus_controls.append(subtitles)
+	focus_controls.append(fullscreen)
 	focus_controls.append(close_button)
 	for index in range(focus_controls.size()):
 		var control := focus_controls[index]
@@ -53,6 +58,7 @@ func open() -> void:
 	for bus: String in sliders:
 		(sliders[bus] as HSlider).set_value_no_signal(Settings.volumes[bus] * 100.0)
 	subtitles.set_pressed_no_signal(Settings.subtitles_enabled)
+	fullscreen.set_pressed_no_signal(Settings.fullscreen)
 	save_error.hide()
 	show()
 	if entrance != null and entrance.is_valid():

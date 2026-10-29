@@ -1,10 +1,114 @@
 {
-  "intro": {"speaker": "Sofía", "text": "Tengo una entrevista de trabajo. Quiero verme profesional, mantener mi cabello largo y conservar un estilo natural. Mi presupuesto es de quinientos pesos."},
-  "guide": {"speaker": "Ezequiel", "text": "Escucha a Sofía antes de elegir. Puedes probar las opciones sin gastar. Cada servicio confirmado consume tiempo y presupuesto."},
-  "cut": {"speaker": "Ezequiel", "text": "Elige el corte y el color. Después arrastra la herramienta por las tres zonas indicadas. También puedes seleccionarlas con el teclado."},
-  "style": {"speaker": "Ezequiel", "text": "Ahora el peinado y la vestimenta. Recuerda que Sofía necesita una presentación profesional para su entrevista."},
-  "review": {"speaker": "Sofía", "text": "¿El resultado mantiene mi largo y mi estilo natural? Revisemos el look antes de terminar."},
-  "success": {"speaker": "Sofía", "text": "¡Me encanta! Me veo profesional y sigo sintiéndome yo. Gracias por escuchar lo que necesitaba."},
-  "failure": {"speaker": "Sofía", "text": "Este cambio no cumple lo que pedí. Necesitaba conservar el largo y verme natural y profesional para mi entrevista."},
-  "timeout": {"speaker": "Ezequiel", "text": "Se terminó el tiempo. Puedes volver a intentarlo; revisa el tiempo de cada servicio antes de confirmarlo."}
+  "intro": {
+    "speaker": "Sofía",
+    "text": "Tengo una entrevista de trabajo. Quiero verme profesional, mantener mi cabello largo y conservar un estilo natural. Mi presupuesto es de quinientos pesos."
+  },
+  "guide": {
+    "speaker": "Ezequiel",
+    "text": "Escucha a Sofía antes de elegir. Puedes probar las opciones sin gastar. Cada servicio confirmado consume tiempo y presupuesto."
+  },
+  "cut": {
+    "speaker": "Ezequiel",
+    "text": "Elige el corte y el color. Después arrastra la herramienta por las tres zonas indicadas. También puedes seleccionarlas con el teclado."
+  },
+  "style": {
+    "speaker": "Ezequiel",
+    "text": "Ahora el peinado y la vestimenta. Recuerda que Sofía necesita una presentación profesional para su entrevista."
+  },
+  "review": {
+    "speaker": "Sofía",
+    "text": "¿El resultado mantiene mi largo y mi estilo natural? Revisemos el look antes de terminar."
+  },
+  "success": {
+    "speaker": "Sofía",
+    "text": "¡Me encanta! Me veo profesional y sigo sintiéndome yo. Gracias por escuchar lo que necesitaba."
+  },
+  "failure": {
+    "speaker": "Sofía",
+    "text": "Este cambio no cumple lo que pedí. Necesitaba conservar el largo y verme natural y profesional para mi entrevista."
+  },
+  "timeout": {
+    "speaker": "Ezequiel",
+    "text": "Se terminó el tiempo. Puedes volver a intentarlo; revisa el tiempo de cada servicio antes de confirmarlo."
+  },
+  "story_intro": {
+    "speaker": "Ezequiel",
+    "text": "Bienvenido al salón, Alex. Tu talento empieza por escuchar. Cada clienta tiene una historia y una petición diferente. Te acompañaré en tu camino a convertirte en Hair Designer."
+  },
+  "story_alex": {
+    "speaker": "Alex",
+    "text": "Gracias, Ezequiel. Quiero aprender, cuidar cada detalle y encontrar un estilo que represente a cada persona. Empezaré escuchando a Sofía."
+  },
+  "final_ezequiel": {
+    "speaker": "Ezequiel",
+    "text": "Alex, escuchaste a Sofía, cuidaste cada detalle de Mariana y lograste la transformación de Valeria. Por tu creatividad y compromiso, hoy te reconozco como Hair Designer de nuestro salón."
+  },
+  "final_alex": {
+    "speaker": "Alex",
+    "text": "¡Gracias! Cada reto me enseñó que un buen cambio respeta a la persona. Estoy listo para seguir creando y escuchar a nuestras próximas clientas."
+  },
+  "mariana_intro": {
+    "speaker": "Mariana",
+    "text": "¡Mi graduación está cerca! Quiero un look elegante y juvenil, con accesorios discretos. Me encantan los detalles, pero no quiero que sean demasiado llamativos. Mi presupuesto es de trescientos sesenta pesos."
+  },
+  "mariana_guide": {
+    "speaker": "Ezequiel",
+    "text": "Mariana necesita equilibrio. Elige un color armónico y un acabado elegante. Un accesorio pequeño puede decir mucho más que uno enorme."
+  },
+  "mariana_cut": {
+    "speaker": "Ezequiel",
+    "text": "Comienza con el corte y el color. Busca armonía con el evento y cuida el presupuesto: todavía faltará el peinado."
+  },
+  "mariana_style": {
+    "speaker": "Ezequiel",
+    "text": "Ahora elige el acabado. Las ondas o un recogido pueden funcionar; recuerda que Mariana pidió accesorios discretos."
+  },
+  "mariana_review": {
+    "speaker": "Mariana",
+    "text": "¿El look es elegante y juvenil? Me gustaría que el cabello y los accesorios se vieran en armonía antes de salir a mi graduación."
+  },
+  "mariana_success": {
+    "speaker": "Mariana",
+    "text": "¡Me encanta! Es elegante, juvenil y los detalles no me roban protagonismo. ¡Estoy lista para mi graduación!"
+  },
+  "mariana_failure": {
+    "speaker": "Mariana",
+    "text": "Este resultado no es lo que imaginé. Necesitaba un look elegante y armónico, con accesorios más discretos. Podemos volver a intentarlo."
+  },
+  "mariana_timeout": {
+    "speaker": "Ezequiel",
+    "text": "Se terminó el tiempo del evento. Revisa los servicios y vuelve a intentarlo; una buena elección también cuida el reloj."
+  },
+  "valeria_intro": {
+    "speaker": "Valeria",
+    "text": "Busco una transformación completa. Quiero ver un cambio de corte, color y peinado que conserve mi identidad. No bastará con arreglar las puntas. Mi presupuesto es de cuatrocientos cincuenta pesos."
+  },
+  "valeria_guide": {
+    "speaker": "Ezequiel",
+    "text": "Valeria tiene expectativas altas. Debes renovar tanto la forma como el color y terminar con un peinado distinto. Organiza bien tu tiempo."
+  },
+  "valeria_cut": {
+    "speaker": "Ezequiel",
+    "text": "Este es el reto final. Elige un corte y un color que produzcan una transformación visible, sin perder la armonía del resultado."
+  },
+  "valeria_style": {
+    "speaker": "Ezequiel",
+    "text": "Completa el cambio con un acabado nuevo. Un buen corte no sustituye el trabajo del peinado y la presentación final."
+  },
+  "valeria_review": {
+    "speaker": "Valeria",
+    "text": "Quiero revisar el resultado completo. ¿Realmente cambiaron el corte, el color y el peinado? Eso es lo que esperaba de este reto."
+  },
+  "valeria_success": {
+    "speaker": "Valeria",
+    "text": "Ahora sí veo una transformación completa. El corte, el color y el acabado funcionan juntos, y sigo siendo yo. Muy buen trabajo, Alex."
+  },
+  "valeria_failure": {
+    "speaker": "Valeria",
+    "text": "El cambio quedó incompleto. Te pedí renovar el corte, el color y el peinado. Necesitamos trabajar las tres cosas para conseguir el resultado."
+  },
+  "valeria_timeout": {
+    "speaker": "Ezequiel",
+    "text": "El reloj llegó a cero. Este reto exige planear los servicios antes de aplicarlos. Respira y vuelve a intentarlo, Alex."
+  }
 }

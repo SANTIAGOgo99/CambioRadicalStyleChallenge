@@ -1,0 +1,19 @@
+{
+  "title": "Evento especial", "client": "Mariana", "event": "Graduación",
+  "request": "Elegante, juvenil y con accesorios discretos.",
+  "conditions": ["Estilo elegante y juvenil", "Color y acabado armónicos", "Accesorios discretos", "Presupuesto máximo $360"],
+  "budget": 360, "seconds": 250, "asset": "mariana", "voice_prefix": "mariana_",
+  "good_cut": [0,1], "good_style": [0,1], "short_cut": [2], "bad_style_preserves_cut": true,
+  "success_text": "Un look elegante y juvenil, con detalles discretos. ¡Mariana está lista para su graduación!",
+  "failure_text": "El corte/color no armoniza con el evento o los accesorios son demasiado llamativos.",
+  "cut_options": [
+    {"name":"Conservar largo", "detail":"Castaño cobrizo natural", "price":90, "seconds":35},
+    {"name":"Iluminar en caramelo", "detail":"Mechas suaves y armónicas", "price":140, "seconds":45},
+    {"name":"Corte atrevido + fucsia", "detail":"Contraste intenso y asimetría", "price":230, "seconds":55}
+  ],
+  "style_options": [
+    {"name":"Ondas + broche discreto", "detail":"Movimiento juvenil, detalle pequeño", "price":130, "seconds":65},
+    {"name":"Recogido + perlas pequeñas", "detail":"Elegancia con accesorios discretos", "price":150, "seconds":70},
+    {"name":"Accesorios grandes", "detail":"Un lazo brillante protagonista", "price":190, "seconds":75}
+  ]
+}

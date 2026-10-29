@@ -1,0 +1,19 @@
+{
+  "title": "Cambio Radical", "client": "Valeria", "event": "Transformación completa",
+  "request": "Un cambio visible de corte, color y peinado.",
+  "conditions": ["Cambiar corte y color", "Aplicar un peinado nuevo", "Conservar una imagen armónica", "Terminar sin exceder $450"],
+  "budget": 450, "seconds": 210, "asset": "valeria", "voice_prefix": "valeria_",
+  "good_cut": [0,1], "good_style": [0,1], "short_cut": [0,1], "bad_style_preserves_cut": true,
+  "success_text": "Corte, color y peinado: una transformación completa que conserva la identidad de Valeria.",
+  "failure_text": "El cambio quedó incompleto. Valeria pidió transformar tanto el cabello como el acabado.",
+  "cut_options": [
+    {"name":"Corte medio + chocolate", "detail":"Nueva forma y color profundo", "price":180, "seconds":65},
+    {"name":"Bob + cobrizo", "detail":"Corte corto y color renovado", "price":200, "seconds":70},
+    {"name":"Solo despunte natural", "detail":"Conservar el aspecto de siempre", "price":80, "seconds":25}
+  ],
+  "style_options": [
+    {"name":"Ondas definidas + traje", "detail":"Volumen y una imagen renovada", "price":150, "seconds":60},
+    {"name":"Liso pulido + traje", "detail":"Acabado limpio y cambio visible", "price":130, "seconds":55},
+    {"name":"Peinado de siempre", "detail":"Sin renovar el acabado", "price":50, "seconds":20}
+  ]
+}

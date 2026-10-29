@@ -1,5 +1,8 @@
 extends Control
 
+signal request_next
+signal request_menu
+
 const Character = preload("res://scripts/game/character_view.gd")
 const ToolButton = preload("res://scripts/game/tool_button.gd")
 const ToolTarget = preload("res://scripts/game/tool_target.gd")
@@ -10,6 +13,15 @@ const GOLD := Color("eebd61")
 const CORAL := Color("bb6856")
 
 var level: Dictionary
+var level_index := 0
+var resume_data: Dictionary = {}
+var app: Control
+var paused := false
+var save_in := 5.0
+var coupon_armed := false
+var trend_armed := false
+var trend_used := false
+var bad_accessory: Control
 var dialogue: Dictionary
 var phase := "intro"
 var selected := -1
@@ -48,15 +60,15 @@ var effects := AudioStreamPlayer.new()
 
 
 func _ready() -> void:
-	level = JSON.parse_string(FileAccess.get_file_as_string("res://data/level_01.json"))
+	level = JSON.parse_string(FileAccess.get_file_as_string("res://data/level_%02d.json" % (level_index + 1)))
+	for key: String in ["good_cut", "good_style", "short_cut"]:
+		level[key] = (level[key] as Array).map(func(value: Variant) -> int: return int(value))
 	dialogue = JSON.parse_string(FileAccess.get_file_as_string("res://data/dialogue.json"))
-	sofia_sheet = load("res://assets/characters/sofia_original.png") as Texture2D
-	variants = load("res://assets/characters/sofia_variants.png") as Texture2D
+	sofia_sheet = load("res://assets/characters/%s_original.png" % level.asset) as Texture2D
+	variants = load("res://assets/characters/%s_variants.png" % level.asset) as Texture2D
 	alex_sheet = load("res://assets/characters/alex_original.png") as Texture2D
-	var progress := ConfigFile.new()
-	if progress.load("user://progress.cfg") == OK:
-		best_stars = clampi(int(progress.get_value("level_01", "stars", 0)), 0, 3)
-		coins = maxi(0, int(progress.get_value("player", "coins", 0)))
+	best_stars = int(Campaign.state.stars[level_index])
+	coins = int(Campaign.state.coins)
 	_build_screen()
 	music.bus = &"Music"
 	add_child(music)
@@ -69,12 +81,30 @@ func _ready() -> void:
 		music.play()
 	effects.bus = &"Effects"
 	add_child(effects)
-	_restart.call_deferred()
+	if not resume_data.is_empty():
+		_restore.call_deferred()
+	else:
+		_restart.call_deferred()
 
 
 func _process(delta: float) -> void:
-	if not running or get_parent().get_node("SettingsPanel").visible:
+	var subtitles = _subs()
+	var speaking: String = subtitles.speaker_name if subtitles.active and not paused else ""
+	sofia.set_talking(speaking == level.client)
+	mentor.set_talking(speaking == "Ezequiel")
+	alex.set_talking(speaking == "Alex")
+	if is_instance_valid(comparison) and comparison.visible:
+		var people := comparison.get_children()
+		for index in range(people.size()):
+			if people[index] is SalonCharacter:
+				people[index].set_talking(index == 1 and speaking == level.client)
+	music.volume_db = move_toward(music.volume_db, -21.0 if subtitles.active else -10.0, delta * 25.0)
+	if not running or paused:
 		return
+	save_in -= delta
+	if save_in <= 0.0:
+		save_in = 5.0
+		checkpoint()
 	remaining = maxf(0.0, remaining - delta)
 	_update_status()
 	if remaining <= 30.0 and not warned:
@@ -140,16 +170,16 @@ func _build_screen() -> void:
 	var left := _card(body, 380)
 	left.add_theme_constant_override("separation", 10)
 	left.add_child(_label("FICHA DE CLIENTA", 18, MUTED))
-	left.add_child(_label("Conoce a Sofía", 34))
-	left.add_child(_label("Entrevista de trabajo", 25, CORAL))
+	left.add_child(_label("Conoce a %s" % level.client, 34))
+	left.add_child(_label(level.event, 25, CORAL))
 	left.add_child(HSeparator.new())
-	left.add_child(_label("SU PETICIÓN", 20, MUTED))
-	left.add_child(_label("Profesional y natural.", 24))
-	left.add_child(_label("• Conservar el cabello largo\n• Mantener un color natural\n• Verse profesional\n• No pasar de $500", 22))
+	left.add_child(_label(level.request, 23))
+	left.add_child(_label("• " + "\n• ".join(level.conditions), 21))
 	left.add_child(HSeparator.new())
 	mentor = Character.new()
-	mentor.custom_minimum_size = Vector2(240, 110)
+	mentor.custom_minimum_size = Vector2(280, 180)
 	left.add_child(mentor)
+	mentor.portrait_mode = true
 	mentor.setup(load("res://assets/characters/ezequiel_original.png") as Texture2D, 2, 1)
 	left.add_child(_label("Ezequiel · tu mentor", 22, MUTED))
 	var remind := _button("Escuchar la petición", func() -> void: _say("intro"), true)
@@ -208,7 +238,7 @@ func _build_screen() -> void:
 
 
 func _restart() -> void:
-	var subtitles := get_parent().get_node("Subtitles")
+	var subtitles = _subs()
 	if not subtitles.line_finished.is_connected(_dialogue_finished):
 		subtitles.line_finished.connect(_dialogue_finished)
 	phase = "intro"
@@ -220,6 +250,10 @@ func _restart() -> void:
 	running = false
 	working = false
 	warned = false
+	paused = false
+	coupon_armed = false
+	trend_armed = false
+	trend_used = false
 	_clear_targets()
 	if is_instance_valid(comparison):
 		comparison.queue_free()
@@ -228,19 +262,20 @@ func _restart() -> void:
 	sofia.show()
 	alex.show_pose(0)
 	sofia.show_pose(0)
-	phase_title.text = "Una nueva primera impresión"
-	work_hint.text = "Alex y Sofía · salón de Ezequiel"
+	phase_title.text = level.title
+	work_hint.text = "Alex y %s · salón de Ezequiel" % level.client
 	tool.hide()
 	_update_status()
 	_clear(right_rows)
-	right_rows.add_child(_label("Tu primer reto", 34))
+	right_rows.add_child(_label("Reto %d · %s" % [level_index + 1, level.client], 34))
 	right_rows.add_child(_label("Escucha. Imagina. Transforma.", 25, CORAL))
-	right_rows.add_child(_label("Sofía quiere causar una buena impresión en su entrevista. Tu reto es encontrar un look que la represente.", 27))
-	right_rows.add_child(_label("Tienes 5 minutos y $500. Las vistas previas son gratuitas; confirma cada servicio antes de aplicarlo.", 25, MUTED))
+	right_rows.add_child(_label(level.request, 27))
+	right_rows.add_child(_label("Tienes %s y $%d. Prueba las opciones gratis y confirma cada servicio antes de aplicarlo." % [_clock(), money], 25, MUTED))
 	right_rows.add_child(_label("Necesitas al menos 2 de 3 estrellas. Hay más de una combinación correcta.", 24, MUTED))
 	var start := _button("Comenzar reto  →", _begin)
 	right_rows.add_child(start)
 	_say("intro")
+	checkpoint()
 
 
 func _begin() -> void:
@@ -249,6 +284,7 @@ func _begin() -> void:
 	phase = "cut"
 	_show_choices()
 	_say("cut")
+	checkpoint()
 
 
 func _show_choices() -> void:
@@ -259,7 +295,7 @@ func _show_choices() -> void:
 	phase_title.text = "01 · Corte y color" if phase == "cut" else "02 · Peinado y estilo"
 	_clear(right_rows)
 	right_rows.add_child(_label("Corte y color" if phase == "cut" else "Peinado y estilo", 32))
-	right_rows.add_child(_label("Vista previa gratuita. Elige pensando en lo que pidió Sofía.", 22, MUTED))
+	right_rows.add_child(_label("Vista previa gratuita. " + ("Kit profesional: servicios 15 % más rápidos." if Campaign.completed(0) else "Escucha lo que pidió la clienta."), 21, MUTED))
 	var options: Array = level.cut_options if phase == "cut" else level.style_options
 	for index in range(options.size()):
 		var option: Dictionary = options[index]
@@ -267,11 +303,37 @@ func _show_choices() -> void:
 		var button := _button("%s\n%s\n$%d   ·   %d s" % [option.name, option.detail, option.price, option.seconds], callback, true)
 		button.name = "Option%d" % index
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		button.add_theme_font_size_override("font_size", 22)
-		button.custom_minimum_size.y = 98
+		button.add_theme_font_size_override("font_size", 21)
+		button.custom_minimum_size.y = 90
 		button.tooltip_text = "%s — %s. $%d, %d segundos." % [option.name, option.detail, option.price, option.seconds]
 		button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		right_rows.add_child(button)
+	var bonuses := HBoxContainer.new()
+	bonuses.add_theme_constant_override("separation", 10)
+	right_rows.add_child(bonuses)
+	if int(Campaign.state.coupons) > 0:
+		var coupon := _button("Cupón -30 %% (%d)" % Campaign.state.coupons, func() -> void:
+			coupon_armed = not coupon_armed
+			if selected >= 0:
+				_select_option(selected)
+			else:
+				_show_choices()
+		, true)
+		coupon.toggle_mode = true
+		coupon.button_pressed = coupon_armed
+		coupon.add_theme_font_size_override("font_size", 18)
+		coupon.custom_minimum_size.y = 42
+		bonuses.add_child(coupon)
+	if phase == "style" and int(Campaign.state.trends) > 0 and not trend_used:
+		var trend := _button("Tendencia (%d)" % Campaign.state.trends, func() -> void:
+			trend_armed = not trend_armed
+			_update_client(true)
+		, true)
+		trend.toggle_mode = true
+		trend.button_pressed = trend_armed
+		trend.add_theme_font_size_override("font_size", 18)
+		trend.custom_minimum_size.y = 42
+		bonuses.add_child(trend)
 	error_label = _label("", 21, CORAL)
 	error_label.hide()
 	right_rows.add_child(error_label)
@@ -283,7 +345,7 @@ func _show_choices() -> void:
 
 
 func _select_option(index: int) -> void:
-	if working:
+	if working or paused:
 		return
 	selected = index
 	_sfx("click")
@@ -293,12 +355,16 @@ func _select_option(index: int) -> void:
 		style.bg_color = GOLD if index == option_index else Color("f0eee6")
 		option.add_theme_stylebox_override("normal", style)
 	confirm_button.disabled = false
+	var choices: Array = level.cut_options if phase == "cut" else level.style_options
+	var price := ceili(float(choices[index].price) * (0.7 if coupon_armed else 1.0))
+	confirm_button.text = "Confirmar · $%d · %d s" % [price, _service_seconds(choices[index])]
 	error_label.hide()
-	if phase == "style" and index == 2 and cut_choice == 2:
+	if level_index == 0 and phase == "style" and index == 2 and cut_choice == 2:
 		confirm_button.disabled = true
 		error_label.text = "Un corte corto no permite este recogido."
 		error_label.show()
 	_update_client(true)
+	checkpoint()
 
 
 func _update_client(preview: bool = false) -> void:
@@ -311,6 +377,8 @@ func _update_client(preview: bool = false) -> void:
 			sofia.show_pose(3)
 		else:
 			sofia.show_pose(cut, variants)
+	elif style == 2 and bool(level.get("bad_style_preserves_cut", false)):
+		sofia.show_pose(cut if cut < 2 else 3, variants if cut < 2 else sofia_sheet)
 	elif style == 2:
 		sofia.show_pose(4, variants)
 	elif cut == 2:
@@ -319,13 +387,16 @@ func _update_client(preview: bool = false) -> void:
 		sofia.show_pose(1 if style == 0 else 2, sofia_sheet if style == 0 else variants)
 	else:
 		sofia.show_pose(3 if style == 0 else 2, variants if style == 0 else sofia_sheet)
+	_update_accessory(style == 2 and level_index == 1, trend_used or (preview and trend_armed))
 
 
 func _start_service() -> void:
-	if selected < 0 or working:
+	if selected < 0 or working or paused:
 		return
 	var options: Array = level.cut_options if phase == "cut" else level.style_options
-	selected_service = options[selected]
+	selected_service = options[selected].duplicate(true)
+	selected_service.price = ceili(float(selected_service.price) * (0.7 if coupon_armed else 1.0))
+	selected_service.seconds = _service_seconds(options[selected])
 	if money < int(selected_service.price):
 		error_label.text = "No alcanza el presupuesto para este servicio."
 		error_label.show()
@@ -334,10 +405,22 @@ func _start_service() -> void:
 		error_label.text = "No queda tiempo suficiente para este servicio."
 		error_label.show()
 		return
+	if not Campaign.consume_service_items(coupon_armed, phase == "style" and trend_armed):
+		error_label.text = "No se pudo guardar el uso de los objetos."
+		error_label.show()
+		return
+	trend_used = trend_used or (phase == "style" and trend_armed)
+	coupon_armed = false
+	trend_armed = false
 	money -= int(selected_service.price)
 	remaining -= float(selected_service.seconds)
+	_build_work()
+	checkpoint()
+
+
+func _build_work(done: int = 0) -> void:
 	working = true
-	strokes = 0
+	strokes = done
 	_update_status()
 	_clear(right_rows)
 	right_rows.add_child(_label("En tus manos", 34))
@@ -367,17 +450,17 @@ func _start_service() -> void:
 	for index in range(3):
 		var target := ToolTarget.new()
 		target.tool_id = phase
-		target.text = str(index + 1)
+		target.text = "OK" if index < strokes else str(index + 1)
 		target.tooltip_text = "Aplicar herramienta · zona %d" % (index + 1)
 		target.add_theme_stylebox_override("normal", _box(GOLD, 32))
 		target.add_theme_color_override("font_color", INK)
 		actors.add_child(target)
 		target.size = Vector2(64, 64)
-		target.disabled = index != 0
+		target.disabled = index != strokes
 		target.pressed.connect(_finish_target.bind(index))
 		targets.append(target)
 	_position_targets()
-	targets[0].grab_focus()
+	targets[strokes].grab_focus()
 
 
 func _position_targets() -> void:
@@ -386,20 +469,37 @@ func _position_targets() -> void:
 	var image_size := Vector2(sofia.texture.get_size())
 	var displayed := image_size * minf(sofia.size.x / image_size.x, sofia.size.y / image_size.y)
 	var origin := sofia.position + (sofia.size - displayed) / 2.0
-	var short_hair := (phase == "cut" and selected == 2) or cut_choice == 2
+	var short_hair: bool = level.short_cut.has(selected if phase == "cut" else cut_choice)
 	var points := [Vector2(0.25, 0.17), Vector2(0.68, 0.22), Vector2(0.40, 0.25 if short_hair else 0.39)]
 	for index in range(targets.size()):
 		targets[index].position = origin + displayed * points[index] - Vector2(32, 32)
 
 
 func _finish_target(index: int) -> void:
-	if not working or index != strokes:
+	if not working or index != strokes or paused:
 		return
 	var target := targets[index]
 	target.text = "OK"
 	target.disabled = true
 	strokes += 1
-	_sfx("scissors" if phase == "cut" else "dryer")
+	var sparks := CPUParticles2D.new()
+	actors.add_child(sparks)
+	sparks.position = target.position + target.size / 2.0
+	sparks.one_shot = true
+	sparks.amount = 12
+	sparks.lifetime = 0.4
+	sparks.direction = Vector2.UP
+	sparks.spread = 180
+	sparks.initial_velocity_min = 25
+	sparks.initial_velocity_max = 80
+	sparks.gravity = Vector2(0, 30)
+	sparks.scale_amount_min = 2
+	sparks.scale_amount_max = 4
+	sparks.color = GOLD
+	sparks.finished.connect(sparks.queue_free)
+	sparks.emitting = true
+	_sfx(("scissors" if index == 0 else "tint") if phase == "cut" else "dryer")
+	alex.show_pose((2 if index == 0 else 3) if phase == "cut" else 4)
 	sofia.react()
 	var action := create_tween()
 	action.tween_property(alex, "rotation", -0.025, 0.08)
@@ -421,13 +521,14 @@ func _finish_target(index: int) -> void:
 		style_choice = selected
 		phase = "review"
 		_show_review()
+	checkpoint()
 
 
 func _show_review() -> void:
 	_update_client()
 	alex.show_pose(1)
 	phase_title.text = "03 · Revisión final"
-	work_hint.text = "¿El cambio representa lo que Sofía pidió?"
+	work_hint.text = "¿El cambio representa lo que %s pidió?" % level.client
 	_clear(right_rows)
 	right_rows.add_child(_label("Antes de terminar", 33))
 	right_rows.add_child(_label("Revisa las condiciones y entrega el look cuando estés listo.", 26, MUTED))
@@ -442,7 +543,9 @@ func _show_review() -> void:
 
 
 func _evaluate() -> void:
-	var valid := cut_choice >= 0 and cut_choice != 2 and style_choice >= 0 and style_choice != 2
+	if paused:
+		return
+	var valid: bool = level.good_cut.has(cut_choice) and level.good_style.has(style_choice)
 	_result(valid, "¡Reto superado!" if valid else "Volvamos a intentarlo", "success" if valid else "failure")
 
 
@@ -454,27 +557,37 @@ func _result(passed: bool, heading: String, line: String) -> void:
 	working = false
 	_clear_targets()
 	tool.hide()
-	var stars := (3 if money >= 250 and remaining >= 120 else 2) if passed else 0
-	var reward := maxi(0, stars - best_stars) * 50
-	if passed and stars > best_stars:
-		best_stars = stars
-		coins += reward
-		var progress := ConfigFile.new()
-		progress.load("user://progress.cfg")
-		progress.set_value("level_01", "stars", best_stars)
-		progress.set_value("player", "coins", coins)
-		progress.set_value("player", "unlocked_level", 2)
-		if progress.save("user://progress.cfg") != OK:
-			get_parent().get_node("Subtitles").show_line("No se pudo guardar el progreso. Revisa el espacio disponible.")
+	var thrift := money >= int(float(level.budget) * 0.15)
+	var fast := remaining >= float(level.seconds) * 0.20
+	var partial: bool = level.good_cut.has(cut_choice) or level.good_style.has(style_choice)
+	var stars := (3 if thrift and fast else 2) if passed else (1 if partial and line != "timeout" else 0)
+	var award := {"saved": true, "reward": 0, "first_clear": false}
+	if passed:
+		award = Campaign.record_result(level_index, stars, money >= int(float(level.budget) * 0.3), fast)
+	else:
+		award.saved = Campaign.save_attempt({})
+	best_stars = int(Campaign.state.stars[level_index])
+	coins = int(Campaign.state.coins)
+	var reward: int = award.reward
 	_clear(right_rows)
 	right_rows.add_child(_label(heading, 34, INK if passed else CORAL))
 	right_rows.add_child(_label("★".repeat(stars) + "☆".repeat(3 - stars), 54, Color("c6902c")))
-	right_rows.add_child(_label("Natural, largo y profesional. ¡Escuchaste a Sofía!" if passed else ("Se acabó el tiempo antes de entregar el look." if line == "timeout" else "El look no respeta el largo, el color natural o la presentación profesional."), 27))
+	right_rows.add_child(_label(level.success_text if passed else ("Se acabó el tiempo antes de entregar el look." if line == "timeout" else level.failure_text), 25))
 	right_rows.add_child(_label("Presupuesto restante: $%d\nTiempo restante: %s" % [money, _clock()], 25, MUTED))
 	if passed:
 		right_rows.add_child(_label("+%d monedas\nMejor resultado: %d/3 estrellas" % [reward, best_stars], 25))
-		right_rows.add_child(_label("Las monedas se otorgan al mejorar tu récord.", 21, MUTED))
-	right_rows.add_child(_button("Volver a jugar" if passed else "Reintentar", _restart))
+		right_rows.add_child(_button("Siguiente clienta →" if level_index < 2 else "Recibir reconocimiento", func() -> void: request_next.emit()))
+	if not award.saved:
+		right_rows.add_child(_label("No se pudo guardar. Revisa el espacio disponible antes de salir.", 22, CORAL))
+	var actions := HBoxContainer.new()
+	actions.add_theme_constant_override("separation", 10)
+	right_rows.add_child(actions)
+	var retry := _button("Repetir" if passed else "Reintentar", _restart, true)
+	var clients := _button("Clientes", func() -> void: request_menu.emit(), true)
+	retry.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	clients.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	actions.add_child(retry)
+	actions.add_child(clients)
 	alex.show_pose(5 if passed else 0)
 	comparison = HBoxContainer.new()
 	actors.add_child(comparison)
@@ -486,7 +599,20 @@ func _result(passed: bool, heading: String, line: String) -> void:
 		comparison.add_child(person)
 		person.setup(sofia_sheet)
 		if index == 1:
-			person.texture = sofia.texture
+			person.copy_appearance(sofia)
+			if is_instance_valid(bad_accessory) and bad_accessory.visible:
+				var accessory := TextureRect.new()
+				person.add_child(accessory)
+				accessory.texture = bad_accessory.texture
+				accessory.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+				accessory.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				accessory.mouse_filter = Control.MOUSE_FILTER_IGNORE
+				accessory.anchor_left = 0.5
+				accessory.anchor_right = 0.5
+				accessory.offset_left = 12
+				accessory.offset_right = 12 + bad_accessory.size.x
+				accessory.offset_top = 25
+				accessory.offset_bottom = 25 + bad_accessory.size.y
 	comparison.hide()
 	var result_view_id := comparison.get_instance_id()
 	var reveal := create_tween()
@@ -496,16 +622,18 @@ func _result(passed: bool, heading: String, line: String) -> void:
 		if phase == "result" and is_instance_valid(result_view) and comparison == result_view:
 			alex.hide()
 			sofia.hide()
+			if is_instance_valid(bad_accessory):
+				bad_accessory.hide()
 			comparison.show()
 	)
 	phase_title.text = "ANTES                    DESPUÉS"
-	work_hint.text = "Primera impresión · Sofía"
-	_sfx("success" if passed else "warning")
+	work_hint.text = "%s · %s" % [level.title, level.client]
+	_sfx("success" if passed else "failure")
 	_say(line)
 
 
 func _update_status() -> void:
-	status.text = "%s   ·   $%d\nNIVEL 01  /  PRIMERA IMPRESIÓN" % [_clock(), money]
+	status.text = "%s   ·   $%d\nNIVEL %02d  /  %s" % [_clock(), money, level_index + 1, level.title.to_upper()]
 	status.add_theme_color_override("font_color", CORAL if remaining < 30 else INK)
 
 
@@ -516,10 +644,11 @@ func _clock() -> String:
 
 func _say(id: String) -> void:
 	active_line = id
-	var entry: Dictionary = dialogue[id]
-	var voice_path := "res://assets/audio/voice/%s.wav" % id
+	var key: String = str(level.voice_prefix) + id
+	var entry: Dictionary = dialogue[key]
+	var voice_path := "res://assets/audio/voice/%s.wav" % key
 	var voice: AudioStream = load(voice_path) if ResourceLoader.exists(voice_path) else null
-	get_parent().get_node("Subtitles").show_line(entry.text, entry.speaker, voice, maxf(4.0, entry.text.length() / 18.0))
+	_subs().show_line(entry.text, entry.speaker, voice, maxf(4.0, entry.text.length() / 18.0))
 	mentor.show_pose(1 if entry.speaker == "Ezequiel" else 0)
 
 
@@ -546,6 +675,9 @@ func _clear(container: Node) -> void:
 	for child in container.get_children():
 		container.remove_child(child)
 		child.queue_free()
+	if container is CanvasItem:
+		container.modulate.a = 0.3
+		container.create_tween().tween_property(container, "modulate:a", 1.0, 0.18)
 
 
 func _box(color: Color, radius: int) -> StyleBoxFlat:
@@ -573,10 +705,82 @@ func _card(parent: Node, width: float) -> VBoxContainer:
 	panel.custom_minimum_size.x = width
 	panel.add_theme_stylebox_override("panel", _box(Color(1.0, 0.98, 0.94, 0.97), 20))
 	parent.add_child(panel)
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.follow_focus = true
+	_margin(panel, 24).add_child(scroll)
 	var rows := VBoxContainer.new()
-	rows.add_theme_constant_override("separation", 14)
-	_margin(panel, 26).add_child(rows)
+	rows.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	rows.add_theme_constant_override("separation", 12)
+	scroll.add_child(rows)
 	return rows
+
+
+func _subs():
+	return get_tree().get_first_node_in_group("Subtitles")
+
+
+func _service_seconds(service: Dictionary) -> int:
+	return ceili(float(service.seconds) * (0.85 if Campaign.completed(0) else 1.0))
+
+
+func checkpoint() -> bool:
+	if phase == "result":
+		return true
+	return Campaign.save_attempt({"level": level_index, "phase": phase,
+		"selected": selected, "cut": cut_choice, "style": style_choice,
+		"money": money, "time": remaining, "working": working, "strokes": strokes,
+		"service": selected_service, "trend_used": trend_used})
+
+
+func _restore() -> void:
+	var saved := resume_data.duplicate(true)
+	_restart()
+	phase = str(saved.get("phase", "intro"))
+	if phase not in ["intro", "cut", "style", "review"]:
+		phase = "intro"
+	cut_choice = clampi(int(saved.get("cut", -1)), -1, 2)
+	style_choice = clampi(int(saved.get("style", -1)), -1, 2)
+	money = clampi(int(saved.get("money", level.budget)), 0, int(level.budget))
+	remaining = clampf(float(saved.get("time", level.seconds)), 0.0, float(level.seconds))
+	trend_used = bool(saved.get("trend_used", false))
+	if phase in ["cut", "style"]:
+		_show_choices()
+		var choice := clampi(int(saved.get("selected", -1)), -1, 2)
+		if choice >= 0:
+			_select_option(choice)
+		if bool(saved.get("working", false)) and choice >= 0:
+			selected_service = saved.get("service", {}).duplicate(true)
+			if selected_service.has("price") and selected_service.has("seconds"):
+				_build_work(clampi(int(saved.get("strokes", 0)), 0, 2))
+	elif phase == "review" and cut_choice >= 0 and style_choice >= 0:
+		_show_review()
+	running = phase != "intro"
+	if phase != "intro":
+		_say("review" if phase == "review" else phase)
+	_update_status()
+	checkpoint()
+
+
+func _update_accessory(large: bool, trend: bool) -> void:
+	if not is_instance_valid(bad_accessory):
+		var view := TextureRect.new()
+		view.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		view.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		view.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		actors.add_child(view)
+		bad_accessory = view
+	bad_accessory.visible = large or trend
+	if not bad_accessory.visible:
+		return
+	var part := AtlasTexture.new()
+	part.atlas = load("res://assets/ui/accessories.svg")
+	part.region = Rect2(0, 256 if large else 0, 256, 256)
+	bad_accessory.texture = part
+	bad_accessory.size = Vector2(100, 100) if large else Vector2(42, 42)
+	var displayed := Vector2(sofia.texture.get_size())
+	displayed *= minf(sofia.size.x / displayed.x, sofia.size.y / displayed.y)
+	bad_accessory.position = sofia.position + (sofia.size - displayed) / 2.0 + displayed * Vector2(0.65, 0.04)
 
 
 func _label(text: String, font_size: int = 26, color: Color = INK) -> Label:
@@ -598,6 +802,7 @@ func _button(text: String, callback: Callable, secondary: bool = false) -> Butto
 	button.add_theme_color_override("font_color", INK)
 	button.add_theme_color_override("font_hover_color", INK)
 	button.add_theme_color_override("font_pressed_color", INK)
+	button.add_theme_color_override("font_focus_color", INK)
 	var normal := _box(Color("f0eee6") if secondary else GOLD, 12)
 	normal.content_margin_left = 18
 	normal.content_margin_right = 18

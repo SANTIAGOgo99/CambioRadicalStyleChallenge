@@ -1,10 +1,9 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/interface.gd" id="1"]
 [ext_resource type="Theme" path="res://assets/ui/base_theme.tres" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/ui/settings_panel.tscn" id="3"]
 [ext_resource type="PackedScene" path="res://scenes/ui/subtitles.tscn" id="4"]
-[ext_resource type="PackedScene" path="res://scenes/game/salon.tscn" id="5"]
 
 [node name="Interface" type="Control"]
 layout_mode = 3
@@ -17,7 +16,12 @@ mouse_filter = 2
 theme = ExtResource("2")
 script = ExtResource("1")
 
-[node name="Salon" parent="." instance=ExtResource("5")]
+[node name="GameSlot" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
 
 [node name="Subtitles" parent="." instance=ExtResource("4")]
 
@@ -33,5 +37,12 @@ offset_bottom = 96.0
 grow_horizontal = 0
 text = "Ajustes"
 tooltip_text = "Audio y subtítulos (Esc)"
+
+[node name="ModalLayer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
 
 [node name="SettingsPanel" parent="." instance=ExtResource("3")]

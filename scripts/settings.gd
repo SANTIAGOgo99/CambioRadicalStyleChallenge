@@ -7,6 +7,7 @@ const DEFAULT_VOLUMES := {"Master": 1.0, "Music": 0.8, "Effects": 1.0, "Voice": 
 
 var volumes: Dictionary = DEFAULT_VOLUMES.duplicate()
 var subtitles_enabled := true
+var fullscreen := false
 
 
 func _ready() -> void:
@@ -20,10 +21,13 @@ func _ready() -> void:
 		var stored_subtitles: Variant = config.get_value("accessibility", "subtitles", true)
 		if stored_subtitles is bool:
 			subtitles_enabled = stored_subtitles
+		fullscreen = bool(config.get_value("display", "fullscreen", false))
 	elif error != ERR_FILE_NOT_FOUND:
 		push_warning("No se pudieron cargar los ajustes; se usarán los valores iniciales.")
 	for bus: String in volumes:
 		_apply_volume(bus)
+	if fullscreen:
+		set_fullscreen(true)
 
 
 func set_volume(bus: String, value: float) -> void:
@@ -43,7 +47,14 @@ func save_settings() -> Error:
 	for bus: String in volumes:
 		config.set_value("audio", bus, volumes[bus])
 	config.set_value("accessibility", "subtitles", subtitles_enabled)
+	config.set_value("display", "fullscreen", fullscreen)
 	return config.save(SAVE_PATH)
+
+
+func set_fullscreen(enabled: bool) -> void:
+	fullscreen = enabled
+	if DisplayServer.get_name() != "headless":
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN if enabled else DisplayServer.WINDOW_MODE_WINDOWED)
 
 
 func _apply_volume(bus: String) -> void:
