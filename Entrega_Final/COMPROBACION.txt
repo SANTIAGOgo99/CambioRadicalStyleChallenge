@@ -1,30 +1,33 @@
-COMPROBACIONES DE ENTREGA — 29 de octubre de 2026
+COMPROBACIONES DE ACTUALIZACIÓN 1.1 — 25 de noviembre de 2026
 Godot 4.7.2.stable.official.ed1daf0bf / Windows x86_64
 
 PROYECTO EDITABLE
-- Importación, carga de escena y arranque: correctos, sin errores del motor.
-- Campaña ejecutada con Godot: los tres niveles se completan, fallan y reintentan;
-  también se verificó la derrota por tiempo en cada nivel.
-- Pausa detiene el reloj y la voz; Continuar recupera fase y servicio en curso,
-  incluidas zonas ya aplicadas, sin cobrar de nuevo ni duplicar objetos.
-- Guardado recargado desde disco, monedas, estrellas, insignias, desbloqueos,
-  compra/consumo de cupón, ficha de tendencia y uniforme alternativo: correctos.
-- Introducción, navegación, recompensas y final: comprobados.
-- Revisión visual con render OpenGL de menú, niveles, trabajo, pausa, ajustes,
-  recompensas, instrucciones, créditos y final; sin superposiciones importantes.
-- Interfaz base a 1280x720, 1920x1080, 2560x1080 y 1280x1024: comprobada.
-- Los 39 WAV contienen señal PCM; los 28 diálogos tienen su archivo de voz.
+- Corte con evento de clic del mouse: cambia la longitud real de los mechones
+  visibles y genera fragmentos cayendo. Los clics fuera del cabello no cortan.
+- Deshacer recupera la geometría previa. La guía indica el largo por mechón.
+- Brocha aplica color, peine requiere movimiento descendente y secadora completa
+  el acabado. Todos los servicios se pueden completar en los tres niveles.
+- Cortar demasiado provoca el fracaso incluso con opciones de servicio correctas.
+- Pausa congela reloj y animación. Continuar recupera cada mechón y el servicio
+  pagado sin volver a cobrarlo. Las partidas anteriores conservan estrellas/monedas.
+- Victoria, derrota por tiempo, reintentos, desbloqueos, final y álbum: comprobados.
+- Álbum guarda el look real con su precisión y estrellas; el deslizador compara
+  antes/después. Se revisaron menú, herramientas, resultados y álbum con OpenGL.
+- Los 28 MP3 mexicanos existen y tienen duración válida. Reproducción de diálogo
+  activa comprobada durante la ejecución gráfica. Subtítulos siguen el clip.
+- Herramientas y accesorios mantienen sus texturas durante el renderizado.
 
-EJECUTABLE DE ENTREGA
-- Exportación release con plantillas oficiales 4.7.2: salida 0.
-- EXE real iniciado en Windows sin editor instalado en el proceso: salida 0.
-- Arranque gráfico y menú del EXE renderizados con Intel UHD / OpenGL 3.3:
-  salida 0, sin errores ni avisos en el registro.
-- El recorrido completo de la campaña se comprobó ejecutando el proyecto en Godot;
-  la comprobación del EXE independiente cubrió arranque y renderizado del menú.
+EJECUTABLE WINDOWS 1.1
+- Exportado con plantillas oficiales 4.7.2, recursos integrados y versión 1.1.0.0.
+- Comprobación independiente del EXE: arranque headless y renderizado gráfico del menú.
+- El recorrido completo de las nuevas interacciones se comprobó en la ejecución
+  del proyecto con Godot; el EXE independiente se comprobó al iniciar.
+- Los ZIP de distribución se comprueban por CRC y se comparan con la suma SHA256
+  recibida por GitHub al publicarlos.
 
 LÍMITES
-Comprobado en el equipo de desarrollo; no se ha probado en otros equipos.
-Voces sintéticas. Animaciones por poses y materiales, sin rig esquelético completo.
-No hay errores críticos conocidos tras estas comprobaciones.
-Registros temporales de desarrollo: .godot/checks/final-*.log (fuera de Git).
+Probado en el equipo de desarrollo con Intel UHD/OpenGL 3.3.
+Voces sintéticas neuronales Dalia/Jorge (es-MX), generadas con autorización.
+Simulación ilustrada 2D por mechones, capas y animación procedural.
+Sin errores críticos conocidos tras estas comprobaciones.
+Registros temporales: .godot/checks/interaction-*.log, fuera de Git.

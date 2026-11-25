@@ -52,11 +52,15 @@ Ficha de clienta → corte/color → peinado/vestimenta → revisión → result
 Vista previa gratuita, confirmación de servicios, interacción con herramientas,
 reloj, presupuesto, éxito/fracaso, reintento y guardado de mejor puntuación.
 Se integran arte original, animaciones de poses e interfaz, música y efectos.
-Las voces sintéticas españolas se generaron localmente: Sabina para las clientas y Raúl
-para Alex y Ezequiel. Los subtítulos duran hasta el final de cada clip; las grabaciones
+La actualización 1.1 incorpora corte progresivo por mechones, brocha, peine y secadora
+con interacciones distintas. La precisión puede provocar el fracaso incluso con
+servicios correctos. Hay deshacer, comparación mediante deslizador y álbum de looks.
+Las voces nuevas son Dalia y Jorge de español de México, generadas con Microsoft
+Edge TTS con autorización del usuario y distribuidas como MP3 locales. Los
+subtítulos duran hasta el final de cada clip; las grabaciones
 pueden sustituirse después por interpretación humana sin cambiar las escenas.
 
-Se conservan las elecciones y el servicio en curso al pausar o volver al menú.
+Se conservan las elecciones, cada mechón y el servicio en curso al pausar o volver al menú.
 Al completar los tres niveles, Ezequiel entrega el reconocimiento a Alex; se pueden
 repetir las clientas desbloqueadas. Desarrollo en `develop`, entrega estable en
 `main`, GitHub como respaldo y comprobaciones básicas.

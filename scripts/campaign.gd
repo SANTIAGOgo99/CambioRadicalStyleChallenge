@@ -20,6 +20,8 @@ func _ready() -> void:
 		state.coins = maxi(0, int(cfg.get_value("player", "coins", 0)))
 	if state.stars.size() != 3:
 		state.stars = [0, 0, 0]
+	if state.album.size() != 3:
+		state.album = [{}, {}, {}]
 	for index in range(3):
 		state.stars[index] = clampi(int(state.stars[index]), 0, 3)
 	state.coins = clampi(int(state.coins), 0, 1000000)
@@ -40,7 +42,7 @@ func _ready() -> void:
 func _reset_memory() -> void:
 	state = {"stars": [0, 0, 0], "coins": 0, "badges": [], "coupons": 0,
 		"trends": 0, "uniform_alt": false, "story_complete": false,
-		"last_level": 0, "attempt": {}, "started": false}
+		"last_level": 0, "attempt": {}, "started": false, "album": [{}, {}, {}]}
 
 
 func save() -> Error:
@@ -120,6 +122,21 @@ func record_result(index: int, stars: int, thrift: bool, fast: bool) -> Dictiona
 func _badge(name: String) -> void:
 	if not state.badges.has(name):
 		state.badges.append(name)
+
+
+func save_look(index: int, look: Dictionary, stars: int, precision_score: int) -> bool:
+	if index < 0 or index >= 3 or look.is_empty():
+		return false
+	var previous: Dictionary = state.album[index].duplicate(true)
+	if not previous.is_empty() and int(previous.get("stars", 0)) > stars:
+		return true
+	if int(previous.get("stars", 0)) == stars and int(previous.get("precision", 0)) >= precision_score:
+		return true
+	state.album[index] = {"look": look.duplicate(true), "stars": stars, "precision": precision_score}
+	if save() != OK:
+		state.album[index] = previous
+		return false
+	return true
 
 
 func purchase(item: String) -> bool:

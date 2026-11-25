@@ -9,11 +9,11 @@
   },
   "cut": {
     "speaker": "Ezequiel",
-    "text": "Elige el corte y el color. Después arrastra la herramienta por las tres zonas indicadas. También puedes seleccionarlas con el teclado."
+    "text": "Vamos a despuntar, cuidando el largo que pidió Sofía. Haz clic con las tijeras sobre cada mechón. Sigue la guía del espejo y después aplica el color con la brocha."
   },
   "style": {
     "speaker": "Ezequiel",
-    "text": "Ahora el peinado y la vestimenta. Recuerda que Sofía necesita una presentación profesional para su entrevista."
+    "text": "Ahora vamos a peinar. Pasa el peine de arriba hacia abajo y dale forma con la secadora. Sofía necesita un acabado natural y profesional para su entrevista."
   },
   "review": {
     "speaker": "Sofía",
@@ -57,11 +57,11 @@
   },
   "mariana_cut": {
     "speaker": "Ezequiel",
-    "text": "Comienza con el corte y el color. Busca armonía con el evento y cuida el presupuesto: todavía faltará el peinado."
+    "text": "Primero dale forma al cabello, mechón por mechón. Luego pasa la brocha para distribuir el color. Cuida el presupuesto de Mariana: todavía falta el peinado para su graduación."
   },
   "mariana_style": {
     "speaker": "Ezequiel",
-    "text": "Ahora elige el acabado. Las ondas o un recogido pueden funcionar; recuerda que Mariana pidió accesorios discretos."
+    "text": "Vamos con el acabado. Desenreda con el peine y mueve la secadora para darle forma. Las ondas o un recogido quedan muy bien; recuerda que Mariana pidió accesorios discretos."
   },
   "mariana_review": {
     "speaker": "Mariana",

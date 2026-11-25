@@ -5,7 +5,8 @@ signal request_menu
 
 const Character = preload("res://scripts/game/character_view.gd")
 const ToolButton = preload("res://scripts/game/tool_button.gd")
-const ToolTarget = preload("res://scripts/game/tool_target.gd")
+const Workbench = preload("res://scripts/game/hair_workbench.gd")
+const LookComparison = preload("res://scripts/game/look_comparison.gd")
 const INK := Color("193e41")
 const MUTED := Color("617477")
 const PAPER := Color("fffaf1")
@@ -37,8 +38,14 @@ var best_stars := 0
 var coins := 0
 var selected_service: Dictionary = {}
 var active_line := ""
-var targets: Array[Button] = []
 var comparison: Control
+var workbench: HairWorkbench
+var last_look: Dictionary = {}
+var saved_work: Dictionary = {}
+var technique := 1.0
+var work_progress: Label
+var work_finish: Button
+var work_tool_buttons: Dictionary = {}
 
 var sofia_sheet: Texture2D
 var variants: Texture2D
@@ -93,6 +100,9 @@ func _process(delta: float) -> void:
 	sofia.set_talking(speaking == level.client)
 	mentor.set_talking(speaking == "Ezequiel")
 	alex.set_talking(speaking == "Alex")
+	if is_instance_valid(workbench):
+		workbench.input_enabled = not paused
+		workbench.speaking = speaking == level.client
 	if is_instance_valid(comparison) and comparison.visible:
 		var people := comparison.get_children()
 		for index in range(people.size()):
@@ -222,7 +232,6 @@ func _build_screen() -> void:
 	sofia.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	sofia.anchor_left = 0.36
 	sofia.setup(sofia_sheet)
-	sofia.resized.connect(_position_targets)
 	tool = ToolButton.new()
 	stage.add_child(tool)
 	tool.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
@@ -254,6 +263,9 @@ func _restart() -> void:
 	coupon_armed = false
 	trend_armed = false
 	trend_used = false
+	last_look = {}
+	saved_work = {}
+	technique = 1.0
 	_clear_targets()
 	if is_instance_valid(comparison):
 		comparison.queue_free()
@@ -422,101 +434,98 @@ func _start_service() -> void:
 
 
 func _build_work(done: int = 0) -> void:
+	_build_interactive_work(done)
+
+
+func _build_interactive_work(_legacy_strokes: int = 0) -> void:
 	working = true
+	strokes = 0
+	_clear_targets()
+	working = true
+	alex.hide()
+	sofia.hide()
+	if is_instance_valid(bad_accessory):
+		bad_accessory.hide()
+	tool.hide()
+	work_hint.text = "Cada movimiento transforma el cabello."
 	mentor.show_pose(0, load("res://assets/characters/ezequiel_expressions.png"))
-	strokes = done
-	_update_status()
+	workbench = Workbench.new()
+	stage.add_child(workbench)
+	workbench.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	workbench.offset_top = 52
+	workbench.offset_bottom = -72
+	var previous := saved_work if not saved_work.is_empty() else last_look
+	if saved_work.is_empty() and phase == "style" and not previous.is_empty():
+		previous = previous.duplicate(true)
+		previous.phase = "cut"
+	workbench.setup(str(level.asset), phase, selected, level_index, previous)
+	workbench.accessory = trend_used
+	saved_work = {}
+	workbench.changed.connect(_workbench_changed)
+	workbench.tool_sound.connect(_sfx)
+	workbench.comment.connect(func(text: String, good: bool) -> void:
+		work_hint.text = text
+		mentor.react()
+		if not good:
+			work_hint.add_theme_color_override("font_color", CORAL)
+		else:
+			work_hint.add_theme_color_override("font_color", INK)
+	)
 	_clear(right_rows)
+	right_rows.add_theme_constant_override("separation", 8)
 	right_rows.add_child(_label("En tus manos", 34))
-	right_rows.add_child(_label("Arrastra la herramienta a las zonas 1, 2 y 3 del cabello, en ese orden.", 29))
-	right_rows.add_child(_label("Con teclado: usa Tab para llegar a la zona iluminada y pulsa Espacio o Enter.", 24, MUTED))
-	right_rows.add_child(_label("Servicio confirmado\n%s\n$%d · %d segundos" % [selected_service.name, selected_service.price, selected_service.seconds], 25))
-	tool.text = "ARRASTRA · Tijeras y brocha" if phase == "cut" else "ARRASTRA · Secadora y cepillo"
-	tool.tool_id = phase
-	var tool_sheet := load("res://assets/ui/salon_tools.png") as Texture2D
-	var tool_part := AtlasTexture.new()
-	tool_part.atlas = tool_sheet
-	var tool_cell := Vector2(tool_sheet.get_size()) / Vector2(3, 1)
-	var tool_index := (1 if selected == 1 else 0) if phase == "cut" else 2
-	tool_part.region = Rect2(Vector2(tool_index * tool_cell.x, 0), tool_cell)
-	tool.icon = tool_part
-	tool.expand_icon = true
-	tool.add_theme_constant_override("icon_max_width", 64)
-	for state: String in ["normal", "hover", "pressed"]:
-		var tool_style := tool.get_theme_stylebox(state).duplicate() as StyleBoxFlat
-		tool_style.content_margin_top = 4
-		tool_style.content_margin_bottom = 4
-		tool.add_theme_stylebox_override(state, tool_style)
-	tool.mouse_default_cursor_shape = Control.CURSOR_DRAG
-	tool.show()
-	work_hint.text = ""
-	alex.show_pose((2 if selected != 1 else 3) if phase == "cut" else 4)
-	for index in range(3):
-		var target := ToolTarget.new()
-		target.tool_id = phase
-		target.text = "OK" if index < strokes else str(index + 1)
-		target.tooltip_text = "Aplicar herramienta · zona %d" % (index + 1)
-		target.add_theme_stylebox_override("normal", _box(GOLD, 32))
-		target.add_theme_color_override("font_color", INK)
-		actors.add_child(target)
-		target.size = Vector2(64, 64)
-		target.disabled = index != strokes
-		target.pressed.connect(_finish_target.bind(index))
-		targets.append(target)
-	_position_targets()
-	targets[strokes].grab_focus()
+	right_rows.add_child(_label("Corte mechón a mechón" if phase == "cut" else "Dale forma al acabado", 25, CORAL))
+	right_rows.add_child(_label("Tijeras: haz clic a la altura deseada. Brocha: mantén presionado y pinta el cabello." if phase == "cut" else "Peine: arrastra de arriba hacia abajo. Secadora: mantén presionado y recorre el cabello.", 23))
+	work_tool_buttons.clear()
+	for id: String in (["cut", "dye"] if phase == "cut" else ["comb", "dry"]):
+		var button := _button(str(Workbench.TOOL_NAMES[id]), func() -> void:
+			workbench.set_tool(id)
+			workbench.grab_focus()
+		, true)
+		button.custom_minimum_size.y = 44
+		button.add_theme_font_size_override("font_size", 23)
+		right_rows.add_child(button)
+		work_tool_buttons[id] = button
+	work_progress = _label("", 23)
+	right_rows.add_child(work_progress)
+	if phase == "cut":
+		var guide_button := CheckButton.new()
+		guide_button.text = "Mostrar largo solicitado"
+		guide_button.button_pressed = true
+		guide_button.add_theme_font_size_override("font_size", 21)
+		guide_button.toggled.connect(func(on: bool) -> void: workbench.guide = on)
+		right_rows.add_child(guide_button)
+		var undo := _button("Deshacer último corte", func() -> void: workbench.undo_cut(), true)
+		undo.custom_minimum_size.y = 48
+		undo.add_theme_font_size_override("font_size", 20)
+		right_rows.add_child(undo)
+	right_rows.add_child(_label("Teclado: 1–4 · flechas · Espacio", 18, MUTED))
+	work_finish = _button("Terminar servicio", _finish_interactive_work)
+	right_rows.add_child(work_finish)
+	_workbench_changed()
+	workbench.grab_focus()
 
 
-func _position_targets() -> void:
-	if targets.is_empty() or sofia.texture == null:
+func _workbench_changed() -> void:
+	if not is_instance_valid(workbench):
 		return
-	var image_size := Vector2(sofia.texture.get_size())
-	var displayed := image_size * minf(sofia.size.x / image_size.x, sofia.size.y / image_size.y)
-	var origin := sofia.position + (sofia.size - displayed) / 2.0
-	var short_hair: bool = level.short_cut.has(selected if phase == "cut" else cut_choice)
-	var center_x := origin.x + displayed.x / 2.0
-	var points := [Vector2(center_x - displayed.y * 0.12, origin.y + displayed.y * 0.17), Vector2(center_x + displayed.y * 0.09, origin.y + displayed.y * 0.22), Vector2(center_x - displayed.y * 0.05, origin.y + displayed.y * (0.25 if short_hair else 0.39))]
-	for index in range(targets.size()):
-		targets[index].position = points[index] - Vector2(32, 32)
+	var ids: Array = ["cut", "dye"] if phase == "cut" else ["comb", "dry"]
+	work_progress.text = "%s: %d %%\n%s: %d %%\nPrecisión: %s" % [Workbench.TOOL_NAMES[ids[0]], roundi(workbench.progress_for(ids[0]) * 100), Workbench.TOOL_NAMES[ids[1]], roundi(workbench.progress_for(ids[1]) * 100), str(roundi(workbench.precision() * 100)) + " %" if workbench.snips > 0 else "—"]
+	work_finish.disabled = not workbench.service_ready()
+	for id: String in work_tool_buttons:
+		var button: Button = work_tool_buttons[id]
+		button.text = ("●  " if workbench.current_tool == id else "") + str(Workbench.TOOL_NAMES[id])
 
 
-func _finish_target(index: int) -> void:
-	if not working or index != strokes or paused:
+func _finish_interactive_work() -> void:
+	if paused or not working or not is_instance_valid(workbench) or not workbench.service_ready():
 		return
-	var target := targets[index]
-	target.text = "OK"
-	target.disabled = true
-	strokes += 1
-	var sparks := CPUParticles2D.new()
-	actors.add_child(sparks)
-	sparks.position = target.position + target.size / 2.0
-	sparks.one_shot = true
-	sparks.amount = 12
-	sparks.lifetime = 0.4
-	sparks.direction = Vector2.UP
-	sparks.spread = 180
-	sparks.initial_velocity_min = 25
-	sparks.initial_velocity_max = 80
-	sparks.gravity = Vector2(0, 30)
-	sparks.scale_amount_min = 2
-	sparks.scale_amount_max = 4
-	sparks.color = GOLD
-	sparks.finished.connect(sparks.queue_free)
-	sparks.emitting = true
-	_sfx(("scissors" if index == 0 else "tint") if phase == "cut" else "dryer")
-	alex.show_pose((2 if index == 0 else 3) if phase == "cut" else 4)
-	sofia.react()
-	var action := create_tween()
-	action.tween_property(alex, "rotation", -0.025, 0.08)
-	action.tween_property(alex, "rotation", 0.025, 0.12)
-	action.tween_property(alex, "rotation", 0.0, 0.08)
-	if strokes < 3:
-		targets[strokes].disabled = false
-		targets[strokes].grab_focus()
-		return
+	last_look = workbench.snapshot()
+	technique = workbench.precision()
 	working = false
 	_clear_targets()
-	tool.hide()
+	alex.show()
+	sofia.show()
 	if phase == "cut":
 		cut_choice = selected
 		phase = "style"
@@ -539,6 +548,7 @@ func _show_review() -> void:
 	right_rows.add_child(_label("Revisa las condiciones y entrega el look cuando estés listo.", 26, MUTED))
 	right_rows.add_child(_label("Corte y color\n%s\n%s" % [level.cut_options[cut_choice].name, level.cut_options[cut_choice].detail], 25))
 	right_rows.add_child(_label("Peinado y estilo\n%s" % level.style_options[style_choice].name, 25))
+	right_rows.add_child(_label("Precisión del corte: %d %%" % roundi(technique * 100), 24, CORAL if technique < 0.55 else INK))
 	right_rows.add_child(_button("Finalizar look  →", _evaluate))
 	right_rows.add_child(_button("Repetir peinado", func() -> void:
 		phase = "style"
@@ -550,7 +560,7 @@ func _show_review() -> void:
 func _evaluate() -> void:
 	if paused:
 		return
-	var valid: bool = level.good_cut.has(cut_choice) and level.good_style.has(style_choice)
+	var valid: bool = level.good_cut.has(cut_choice) and level.good_style.has(style_choice) and technique >= 0.55
 	_result(valid, "¡Reto superado!" if valid else "Volvamos a intentarlo", "success" if valid else "failure")
 
 
@@ -565,10 +575,12 @@ func _result(passed: bool, heading: String, line: String) -> void:
 	var thrift := money >= int(float(level.budget) * 0.25)
 	var fast := remaining >= float(level.seconds) * 0.20
 	var partial: bool = level.good_cut.has(cut_choice) or level.good_style.has(style_choice)
-	var stars := (3 if thrift and fast else 2) if passed else (1 if partial and line != "timeout" else 0)
+	var stars := (3 if thrift and fast and technique >= 0.90 else 2) if passed else (1 if partial and line != "timeout" else 0)
 	var award := {"saved": true, "reward": 0, "first_clear": false}
 	if passed:
 		award = Campaign.record_result(level_index, stars, money >= int(float(level.budget) * 0.3), fast)
+		if not last_look.is_empty():
+			Campaign.save_look(level_index, last_look, stars, roundi(technique * 100))
 	else:
 		award.saved = Campaign.save_attempt({})
 	best_stars = int(Campaign.state.stars[level_index])
@@ -577,7 +589,7 @@ func _result(passed: bool, heading: String, line: String) -> void:
 	_clear(right_rows)
 	right_rows.add_child(_label(heading, 34, INK if passed else CORAL))
 	right_rows.add_child(_label("★".repeat(stars) + "☆".repeat(3 - stars), 54, Color("c6902c")))
-	right_rows.add_child(_label(level.success_text if passed else ("Se acabó el tiempo antes de entregar el look." if line == "timeout" else level.failure_text), 25))
+	right_rows.add_child(_label(level.success_text if passed else ("Se acabó el tiempo antes de entregar el look." if line == "timeout" else "Se cortó demasiado o el largo quedó desigual. Sigue la guía y utiliza Deshacer para corregir." if technique < 0.55 else level.failure_text), 25))
 	right_rows.add_child(_label("Presupuesto restante: $%d\nTiempo restante: %s" % [money, _clock()], 25, MUTED))
 	if passed:
 		right_rows.add_child(_label("+%d monedas\nMejor resultado: %d/3 estrellas" % [reward, best_stars], 25))
@@ -594,30 +606,10 @@ func _result(passed: bool, heading: String, line: String) -> void:
 	actions.add_child(retry)
 	actions.add_child(clients)
 	alex.show_pose(5 if passed else 0)
-	comparison = HBoxContainer.new()
+	comparison = LookComparison.new()
 	actors.add_child(comparison)
 	comparison.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	comparison.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	for index in range(2):
-		var person := Character.new()
-		person.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		comparison.add_child(person)
-		person.setup(sofia_sheet)
-		if index == 1:
-			person.copy_appearance(sofia)
-			if is_instance_valid(bad_accessory) and bad_accessory.visible:
-				var accessory := TextureRect.new()
-				person.add_child(accessory)
-				accessory.texture = bad_accessory.texture
-				accessory.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-				accessory.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-				accessory.mouse_filter = Control.MOUSE_FILTER_IGNORE
-				accessory.anchor_left = 0.5
-				accessory.anchor_right = 0.5
-				accessory.offset_left = 12
-				accessory.offset_right = 12 + bad_accessory.size.x
-				accessory.offset_top = 25
-				accessory.offset_bottom = 25 + bad_accessory.size.y
+	comparison.setup(str(level.asset), last_look)
 	comparison.hide()
 	var result_view_id := comparison.get_instance_id()
 	var reveal := create_tween()
@@ -631,8 +623,8 @@ func _result(passed: bool, heading: String, line: String) -> void:
 				bad_accessory.hide()
 			comparison.show()
 	)
-	phase_title.text = "ANTES                    DESPUÉS"
-	work_hint.text = "%s · %s" % [level.title, level.client]
+	phase_title.text = "TU TRANSFORMACIÓN"
+	work_hint.text = "Mueve el deslizador para comparar tu trabajo."
 	_sfx("success" if passed else "failure")
 	_say(line)
 
@@ -651,7 +643,9 @@ func _say(id: String) -> void:
 	active_line = id
 	var key: String = str(level.voice_prefix) + id
 	var entry: Dictionary = dialogue[key]
-	var voice_path := "res://assets/audio/voice/%s.wav" % key
+	var voice_path := "res://assets/audio/voice_mx/%s.mp3" % key
+	if not ResourceLoader.exists(voice_path):
+		voice_path = "res://assets/audio/voice/%s.wav" % key
 	var voice: AudioStream = load(voice_path) if ResourceLoader.exists(voice_path) else null
 	_subs().show_line(entry.text, entry.speaker, voice, maxf(4.0, entry.text.length() / 18.0))
 	mentor.show_pose(1 if entry.speaker == "Ezequiel" else 0)
@@ -671,9 +665,10 @@ func _sfx(id: String) -> void:
 
 
 func _clear_targets() -> void:
-	for target in targets:
-		target.queue_free()
-	targets.clear()
+	if is_instance_valid(workbench):
+		stage.remove_child(workbench)
+		workbench.queue_free()
+		workbench = null
 
 
 func _clear(container: Node) -> void:
@@ -735,7 +730,8 @@ func checkpoint() -> bool:
 	return Campaign.save_attempt({"level": level_index, "phase": phase,
 		"selected": selected, "cut": cut_choice, "style": style_choice,
 		"money": money, "time": remaining, "working": working, "strokes": strokes,
-		"service": selected_service, "trend_used": trend_used})
+		"service": selected_service, "trend_used": trend_used, "technique": technique,
+		"look": last_look, "work": workbench.snapshot() if is_instance_valid(workbench) else {}})
 
 
 func _restore() -> void:
@@ -749,6 +745,9 @@ func _restore() -> void:
 	money = clampi(int(saved.get("money", level.budget)), 0, int(level.budget))
 	remaining = clampf(float(saved.get("time", level.seconds)), 0.0, float(level.seconds))
 	trend_used = bool(saved.get("trend_used", false))
+	last_look = saved.get("look", {}).duplicate(true)
+	saved_work = saved.get("work", {}).duplicate(true)
+	technique = clampf(float(saved.get("technique", 1.0)), 0.0, 1.0)
 	if phase in ["cut", "style"]:
 		_show_choices()
 		var choice := clampi(int(saved.get("selected", -1)), -1, 2)

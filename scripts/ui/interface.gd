@@ -1,6 +1,7 @@
 extends Control
 
 const Character = preload("res://scripts/game/character_view.gd")
+const LookComparison = preload("res://scripts/game/look_comparison.gd")
 const INK := Color("193e41")
 const PAPER := Color("fffaf1")
 const GOLD := Color("eebd61")
@@ -199,11 +200,12 @@ func show_menu() -> void:
 	grid.add_child(_button("Elegir clienta", show_levels, true))
 	grid.add_child(_button("Cómo jugar", show_instructions, true))
 	grid.add_child(_button("Recompensas", show_rewards, true))
+	grid.add_child(_button("Mi álbum de looks", show_album, true))
 	grid.add_child(_button("Créditos", show_credits, true))
 	rows.add_child(_label("Tres clientas. Tres retos. Tu propio estilo.", 25, MUTED))
 	if Campaign.state.story_complete:
 		rows.add_child(_button("Ver tu reconocimiento", show_finale, true))
-	rows.add_child(_button("Salir", func() -> void: _confirm("¿Salir del juego?", _quit), true))
+	grid.add_child(_button("Salir", func() -> void: _confirm("¿Salir del juego?", _quit), true))
 	_portrait(body, "alex_original", 0, Vector2(600, 630), "Alex")
 	new_button.grab_focus()
 
@@ -295,13 +297,38 @@ func _next_level() -> void:
 		show_finale()
 
 
+func show_album() -> void:
+	_clear_view("album")
+	var body := _base_view("Tu álbum de looks", "Tus mejores trabajos se guardan al completar cada reto. Mueve el deslizador para comparar.")
+	var names := ["Sofía", "Mariana", "Valeria"]
+	var assets := ["sofia", "mariana", "valeria"]
+	for index in range(3):
+		var rows := _panel(body, 510)
+		rows.add_child(_label(str(names[index]), 32))
+		var entry: Dictionary = Campaign.state.album[index]
+		if entry.is_empty():
+			_portrait(rows, str(assets[index]) + "_original", 0, Vector2(310, 360), str(names[index]))
+			rows.add_child(_label("Completa este reto para guardar tu primer look.", 23, MUTED))
+		else:
+			var review := LookComparison.new()
+			rows.add_child(review)
+			review.custom_minimum_size = Vector2(350, 400)
+			review.setup(str(assets[index]), entry.look)
+			rows.add_child(_label("★".repeat(int(entry.stars)) + "☆".repeat(3 - int(entry.stars)), 34, Color("b58126")))
+			rows.add_child(_label("Precisión: %d %%" % int(entry.precision), 23, MUTED))
+		var play := _button("Atender de nuevo", load_level.bind(index), true)
+		play.disabled = not Campaign.unlocked(index)
+		rows.add_child(play)
+	_add_back()
+
+
 func show_instructions() -> void:
 	_clear_view("instructions")
 	var body := _base_view("El arte de un buen cambio", "Se juega con ratón. También puedes navegar con Tab y confirmar con Enter o Espacio.")
 	var rows := _panel(body, 1000)
-	for item: String in ["01 · Escucha la petición y revisa sus condiciones.", "02 · Prueba opciones: el espejo de vista previa es gratuito.", "03 · Confirma el precio y tiempo antes de aplicar un servicio.", "04 · Arrastra la herramienta a las zonas 1, 2 y 3, en orden.", "05 · Revisa el resultado y entrega un look que cumpla la petición."]:
+	for item: String in ["01 · Escucha la petición y revisa sus condiciones.", "02 · Prueba opciones y confirma el precio y tiempo del servicio.", "03 · Tijeras: corta cada mechón con un clic. Sigue la guía del largo.", "04 · Brocha: pinta con clic sostenido. Peine: pasa de arriba hacia abajo. Secadora: recorre el cabello.", "05 · Compara antes/después. La precisión también cuenta para tus estrellas y tu álbum."]:
 		rows.add_child(_label(item, 29))
-	rows.add_child(_label("Esc abre la pausa; F11 cambia la pantalla completa. La pausa detiene el reloj y la voz. Se guarda el reto en curso y puedes continuarlo después.", 25, MUTED))
+	rows.add_child(_label("Esc pausa; F11 cambia la pantalla completa. En el espejo: 1/2/3/4 eligen herramienta, flechas mueven el cursor y Espacio aplica. Puedes deshacer el último corte. Se guardan incluso los mechones que ya trabajaste.", 23, MUTED))
 	var tools := TextureRect.new()
 	tools.texture = load("res://assets/ui/salon_tools.png")
 	tools.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -361,7 +388,7 @@ func show_credits() -> void:
 	rows.add_child(_label("Propuesta, historia y proyecto académico\nUniversidad Tecnológica de la Huasteca Hidalguense", 28))
 	rows.add_child(_label("Proyecto transversal: Ezequiel Castillo Ángeles Hair Designer.", 24, MUTED))
 	rows.add_child(_label("Desarrollo en Godot 4.7.2 y GDScript. Arte original generado para este videojuego; no se utilizan las imágenes de referencia de los PDF como personajes.", 26, MUTED))
-	rows.add_child(_label("Música y efectos originales sintetizados. Voces sintéticas españolas de Windows: Sabina y Raúl. El juego funciona sin conexión a internet.", 26, MUTED))
+	rows.add_child(_label("Música y efectos originales sintetizados. Voces de español de México: Dalia y Jorge, generadas con Microsoft Edge TTS. Los audios están incluidos y el juego funciona sin conexión a internet.", 26, MUTED))
 	rows.add_child(_label("Godot Engine y sus dependencias se distribuyen bajo sus licencias correspondientes, incluidas con la entrega.", 23, MUTED))
 	_portrait(body, "ezequiel_original", 0, Vector2(460, 540), "Ezequiel", true)
 	_add_back()
@@ -511,7 +538,10 @@ func _quit() -> void:
 
 func _say(key: String) -> void:
 	var line: Dictionary = lines[key]
-	subtitles.show_line(line.text, line.speaker, load("res://assets/audio/voice/%s.wav" % key))
+	var path := "res://assets/audio/voice_mx/%s.mp3" % key
+	if not ResourceLoader.exists(path):
+		path = "res://assets/audio/voice/%s.wav" % key
+	subtitles.show_line(line.text, line.speaker, load(path))
 
 
 func _set_music(track: String) -> void:
