@@ -1,4 +1,4 @@
-COMPROBACIONES DE ACTUALIZACIÓN 1.1 — 25 de noviembre de 2026
+COMPROBACIONES DE ACTUALIZACIÓN 1.1.1 — 25 de noviembre de 2026
 Godot 4.7.2.stable.official.ed1daf0bf / Windows x86_64
 
 PROYECTO EDITABLE
@@ -16,9 +16,14 @@ PROYECTO EDITABLE
 - Los 28 MP3 mexicanos existen y tienen duración válida. Reproducción de diálogo
   activa comprobada durante la ejecución gráfica. Subtítulos siguen el clip.
 - Herramientas y accesorios mantienen sus texturas durante el renderizado.
+- Brocha 1.1.1: pinceladas localizadas con producto húmedo visible sobre el tono
+  natural; cara protegida, conservación de la máscara al retomar y migración del 73 %
+  de cobertura anterior. Un corte muy corto permite cubrir el cabello restante.
+- La campaña de los tres niveles se completó con la nueva brocha. El botón indica
+  la tarea pendiente; la calidad del corte sigue evaluándose al entregar el look.
 
-EJECUTABLE WINDOWS 1.1
-- Exportado con plantillas oficiales 4.7.2, recursos integrados y versión 1.1.0.0.
+EJECUTABLE WINDOWS 1.1.1
+- Exportado con plantillas oficiales 4.7.2, recursos integrados y versión 1.1.1.0.
 - Comprobación independiente del EXE: arranque headless y renderizado gráfico del menú.
 - El recorrido completo de las nuevas interacciones se comprobó en la ejecución
   del proyecto con Godot; el EXE independiente se comprobó al iniciar.

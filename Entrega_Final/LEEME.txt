@@ -1,9 +1,9 @@
-CAMBIO RADICAL: STYLE CHALLENGE — ACTUALIZACIÓN 1.1
+CAMBIO RADICAL: STYLE CHALLENGE — ACTUALIZACIÓN 1.1.1
 Videojuego académico de Creación de Videojuegos
 Héctor Santiago Hernández
 
 JUGAR
-Abre CambioRadicalStyleChallenge-1.1.exe en Windows de 64 bits.
+Abre CambioRadicalStyleChallenge-1.1.1.exe en Windows de 64 bits.
 No requiere Godot, internet ni instalación. Los recursos están dentro del EXE.
 Si descargas el ZIP, extráelo antes de jugar. No ejecutes dentro del ZIP.
 
@@ -14,8 +14,11 @@ Cada clienta necesita al menos dos estrellas para superar el reto.
 CONTROLES
 Ratón: elige y confirma el servicio. Tijeras: cada clic corta los mechones a esa
 altura. Sigue la guía del largo; puedes deshacer. Brocha: mantén presionado y pinta.
+La brocha deja producto húmedo visible en cada pasada. Las marcas coral indican lo
+pendiente, incluso si conservas el color natural. Al terminar se muestra el tono final.
 Peine: arrastra de arriba hacia abajo. Secadora: mantén presionado y recorre el pelo.
-Terminar servicio se activa al completar el trabajo con sus dos herramientas.
+Terminar servicio se activa al completar las dos herramientas; mientras tanto,
+el botón indica exactamente qué falta. Solo cuenta el cabello visible que queda.
 Teclado: Tab para navegar; Enter/Espacio para confirmar. En el espejo, 1/2/3/4
 eligen tijeras/brocha/peine/secadora; flechas mueven el cursor y Espacio aplica.
 Esc: pausa o volver. F11: pantalla completa.

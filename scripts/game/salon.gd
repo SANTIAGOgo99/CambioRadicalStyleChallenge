@@ -44,6 +44,7 @@ var last_look: Dictionary = {}
 var saved_work: Dictionary = {}
 var technique := 1.0
 var work_progress: Label
+var work_instruction: Label
 var work_finish: Button
 var work_tool_buttons: Dictionary = {}
 
@@ -475,7 +476,8 @@ func _build_interactive_work(_legacy_strokes: int = 0) -> void:
 	right_rows.add_theme_constant_override("separation", 8)
 	right_rows.add_child(_label("En tus manos", 34))
 	right_rows.add_child(_label("Corte mechón a mechón" if phase == "cut" else "Dale forma al acabado", 25, CORAL))
-	right_rows.add_child(_label("Tijeras: haz clic a la altura deseada. Brocha: mantén presionado y pinta el cabello." if phase == "cut" else "Peine: arrastra de arriba hacia abajo. Secadora: mantén presionado y recorre el cabello.", 23))
+	work_instruction = _label("", 21)
+	right_rows.add_child(work_instruction)
 	work_tool_buttons.clear()
 	for id: String in (["cut", "dye"] if phase == "cut" else ["comb", "dry"]):
 		var button := _button(str(Workbench.TOOL_NAMES[id]), func() -> void:
@@ -490,7 +492,7 @@ func _build_interactive_work(_legacy_strokes: int = 0) -> void:
 	right_rows.add_child(work_progress)
 	if phase == "cut":
 		var guide_button := CheckButton.new()
-		guide_button.text = "Mostrar largo solicitado"
+		guide_button.text = "Mostrar guías de trabajo"
 		guide_button.button_pressed = true
 		guide_button.add_theme_font_size_override("font_size", 21)
 		guide_button.toggled.connect(func(on: bool) -> void: workbench.guide = on)
@@ -501,6 +503,9 @@ func _build_interactive_work(_legacy_strokes: int = 0) -> void:
 		right_rows.add_child(undo)
 	right_rows.add_child(_label("Teclado: 1–4 · flechas · Espacio", 18, MUTED))
 	work_finish = _button("Terminar servicio", _finish_interactive_work)
+	work_finish.add_theme_font_size_override("font_size", 21)
+	work_finish.add_theme_color_override("font_disabled_color", Color("706355"))
+	work_finish.add_theme_stylebox_override("disabled", _box(Color("e6dfd2"), 12))
 	right_rows.add_child(work_finish)
 	_workbench_changed()
 	workbench.grab_focus()
@@ -510,8 +515,18 @@ func _workbench_changed() -> void:
 	if not is_instance_valid(workbench):
 		return
 	var ids: Array = ["cut", "dye"] if phase == "cut" else ["comb", "dry"]
+	work_instruction.text = {"cut": "Tijeras: haz clic a la altura de la guía. Puedes deshacer el último corte.", "dye": "Brocha: arrastra con clic sostenido. Cubre las marcas coral; verás el producto húmedo.", "comb": "Peine: mantén presionado y pasa de arriba hacia abajo por el cabello.", "dry": "Secadora: mantén presionado y recorre el cabello para darle forma."}[workbench.current_tool]
 	work_progress.text = "%s: %d %%\n%s: %d %%\nPrecisión: %s" % [Workbench.TOOL_NAMES[ids[0]], roundi(workbench.progress_for(ids[0]) * 100), Workbench.TOOL_NAMES[ids[1]], roundi(workbench.progress_for(ids[1]) * 100), str(roundi(workbench.precision() * 100)) + " %" if workbench.snips > 0 else "—"]
 	work_finish.disabled = not workbench.service_ready()
+	work_finish.text = "Terminar servicio"
+	work_finish.tooltip_text = ""
+	for id: String in ids:
+		var minimum := 0.90 if id == "cut" else 0.86
+		if workbench.progress_for(id) < minimum:
+			var task: String = {"cut": "corte", "dye": "producto", "comb": "peinado", "dry": "secado"}[id]
+			work_finish.text = "Falta %s · %d/%d %%" % [task, floori(workbench.progress_for(id) * 100), roundi(minimum * 100)]
+			work_finish.tooltip_text = "Completa las zonas pendientes. La calidad se evalúa al entregar el look."
+			break
 	for id: String in work_tool_buttons:
 		var button: Button = work_tool_buttons[id]
 		button.text = ("●  " if workbench.current_tool == id else "") + str(Workbench.TOOL_NAMES[id])
@@ -778,6 +793,7 @@ func _migrate_applied_look() -> Dictionary:
 		builder.lengths[index] = builder.target_for(index)
 	builder.touched.fill(true)
 	builder.dyed.fill(1.0)
+	builder.paint.fill(1.0)
 	builder.snips = Workbench.STRANDS
 	var converted := builder.snapshot()
 	if phase == "review" and style_choice >= 0:
