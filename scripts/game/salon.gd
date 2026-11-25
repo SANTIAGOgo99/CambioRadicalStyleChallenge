@@ -748,6 +748,9 @@ func _restore() -> void:
 	last_look = saved.get("look", {}).duplicate(true)
 	saved_work = saved.get("work", {}).duplicate(true)
 	technique = clampf(float(saved.get("technique", 1.0)), 0.0, 1.0)
+	# Older saves recorded an applied look by option, before strand data existed.
+	if last_look.is_empty() and cut_choice >= 0 and phase in ["style", "review"]:
+		last_look = _migrate_applied_look()
 	if phase in ["cut", "style"]:
 		_show_choices()
 		var choice := clampi(int(saved.get("selected", -1)), -1, 2)
@@ -764,6 +767,28 @@ func _restore() -> void:
 		_say("review" if phase == "review" else phase)
 	_update_status()
 	checkpoint()
+
+
+func _migrate_applied_look() -> Dictionary:
+	var builder := Workbench.new()
+	stage.add_child(builder)
+	builder.hide()
+	builder.setup(str(level.asset), "cut", cut_choice, level_index)
+	for index in range(Workbench.STRANDS):
+		builder.lengths[index] = builder.target_for(index)
+	builder.touched.fill(true)
+	builder.dyed.fill(1.0)
+	builder.snips = Workbench.STRANDS
+	var converted := builder.snapshot()
+	if phase == "review" and style_choice >= 0:
+		converted.phase = "style"
+		converted.choice = style_choice
+		converted.combed.fill(1.0)
+		converted.dried.fill(1.0)
+	converted.accessory = trend_used
+	stage.remove_child(builder)
+	builder.free()
+	return converted
 
 
 func _update_accessory(large: bool, trend: bool) -> void:
